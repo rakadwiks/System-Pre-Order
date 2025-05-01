@@ -63,5 +63,18 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Copyright (c) 2025 Raka Dwi Kris Setiawan
+
+All rights reserved.
+
+This source code is the property of Raka Dwi Kris Setiawan. 
+Unauthorized copying, distribution, modification, or use of this code, 
+via any medium, is strictly prohibited without the express written 
+permission of the copyright holder.
+
+This software is not open source and may not be copied, shared, 
+or used for commercial or non-commercial purposes unless explicitly authorized.
+
+For permissions, contact: [dwiksraka@gmail.com]
+
 # System-Pre-Order
