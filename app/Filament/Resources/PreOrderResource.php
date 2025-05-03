@@ -17,7 +17,7 @@ class PreOrderResource extends Resource
 {
     protected static ?string $model = PreOrder::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
     public static function form(Form $form): Form
     {
