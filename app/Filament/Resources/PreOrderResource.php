@@ -98,8 +98,8 @@ class PreOrderResource extends Resource
     {
         return [
             'index' => Pages\ListPreOrders::route('/'),
-            'create' => Pages\CreatePreOrder::route('/create'),
-            'edit' => Pages\EditPreOrder::route('/{record}/edit'),
+            // 'create' => Pages\CreatePreOrder::route('/create'),
+            // 'edit' => Pages\EditPreOrder::route('/{record}/edit'),
         ];
     }
 }
