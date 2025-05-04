@@ -2,16 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms;
+use Filament\Tables;
+use App\Models\Product;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
-use App\Models\Product;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class ProductResource extends Resource
 {
@@ -91,8 +92,33 @@ class ProductResource extends Resource
     {
         return [
             'index' => Pages\ListProducts::route('/'),
-            'create' => Pages\CreateProduct::route('/create'),
-            'edit' => Pages\EditProduct::route('/{record}/edit'),
+            // 'create' => Pages\CreateProduct::route('/create'),
+            // 'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    // Middleware untuk Hak Akses Superadmin, Admin, User
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+    public static function canView(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
     }
 }

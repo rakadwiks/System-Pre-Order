@@ -20,9 +20,30 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'team_id',
         'password',
         'role',
     ];
+
+    //mengubah string menjadi array untuk penggunakan checkboxlist
+    protected $casts = [
+        'role' => 'array',
+    ];
+    
+    // Membuat Roles agar 
+    /**
+     * Cek apakah user memiliki salah satu dari role yang diberikan.
+     *
+     * @param mixed $roles
+     * @return bool
+     */
+    public function hasRole($roles): bool
+    {
+        
+        \Log::info('Checking roles for user: ' . json_encode($this->role));  // Log untuk melacak role
+        $roles = (array) $roles;  // Pastikan parameter roles adalah array
+        return collect($this->role)->intersect($roles)->isNotEmpty();  // Cek apakah ada role yang cocok
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -46,7 +67,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function teams() {
-        return $this->belongsTo(Team::class, 'id_team');
+    public function team() {
+        return $this->belongsTo(Team::class);
     }
 }
