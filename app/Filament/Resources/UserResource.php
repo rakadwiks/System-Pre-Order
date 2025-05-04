@@ -2,22 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
-use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\User;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\CheckboxList;
+use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-
+use App\Filament\Resources\UserResource\RelationManagers;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationGroup = 'Other'; // navigasi group
 
     public static function form(Form $form): Form
     {
@@ -30,11 +35,26 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
+                Select::make('team_id')
+                    ->label('Team')
+                    ->relationship('team', 'name_team') // relasi Eloquent ke model Team
+                    ->searchable()
+                    ->preload() // preload untuk menghindari delay
+                    ->required(),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->required()
                     ->maxLength(255),
+                CheckboxList::make('role')
+                    ->label('Roles')
+                    ->options([
+                        'user' => 'User',
+                        'admin' => 'Admin',
+                        'superadmin' => 'Superadmin',
+                    ])
+                    ->columns(3) // mengatur kolom
+                    ->default(['user'])  // Defaultnya adalah 'user' ketika registrasi
+                    ->required(),
             ]);
     }
 
@@ -46,7 +66,14 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('role')
+                TextColumn::make('role')
+                    ->badge()
+                    ->colors([
+                        'gray' => 'user',
+                        'warning' => 'admin',
+                        'danger' => 'superadmin',
+                    ]),
+                Tables\Columns\TextColumn::make('team.name_team') // Mengambil nama dari tabel teams
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -81,8 +108,33 @@ class UserResource extends Resource
     {
         return [
             'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            // 'create' => Pages\CreateUser::route('/create'),
+            // 'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    // Middleware untuk Hak Akses Superadmin, Admin, User
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+    public static function canView(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
     }
 }

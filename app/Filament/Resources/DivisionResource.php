@@ -2,28 +2,32 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\DivisionResource\Pages;
-use App\Filament\Resources\DivisionResource\RelationManagers;
-use App\Models\Division;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\Division;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\DivisionResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\DivisionResource\RelationManagers;
 
 class DivisionResource extends Resource
 {
     protected static ?string $model = Division::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog';
+    protected static ?string $navigationGroup = 'Maters'; // navigasi group
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name_division')
+                    ->label('Name Divison')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -34,6 +38,7 @@ class DivisionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name_division')
+                    ->label('Name Divison')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -68,8 +73,33 @@ class DivisionResource extends Resource
     {
         return [
             'index' => Pages\ListDivisions::route('/'),
-            'create' => Pages\CreateDivision::route('/create'),
-            'edit' => Pages\EditDivision::route('/{record}/edit'),
+            // 'create' => Pages\CreateDivision::route('/create'),
+            // 'edit' => Pages\EditDivision::route('/{record}/edit'),
         ];
     }
+
+     // Middleware untuk Hak Akses Superadmin, Admin, User
+     public static function canViewAny(): bool
+     {
+         return Auth::user()?->hasRole(['superadmin', 'admin']);
+     }
+     public static function canView(Model $record): bool
+     {
+         return Auth::user()?->hasRole(['superadmin', 'admin']);
+     }
+ 
+     public static function canCreate(): bool
+     {
+         return Auth::user()?->hasRole(['superadmin', 'admin']);
+     }
+ 
+     public static function canEdit(Model $record): bool
+     {
+         return Auth::user()?->hasRole(['superadmin', 'admin']);
+     }
+ 
+     public static function canDelete(Model $record): bool
+     {
+         return Auth::user()?->hasRole(['superadmin', 'admin']);
+     }
 }

@@ -8,11 +8,13 @@ class Team extends Model
 {
     use HasFactory;
     protected $guarded = [];
-
-    public function department() {
-        return $this->belongsTo(Division::class, 'id_division');
+    
+    // mengambil data dari tabel divisions & kolom division_id pada team
+    public function division() {
+        return $this->belongsTo(Division::class, 'division_id'); 
     }
-    public function product() {
-        return $this->belongsTo(Position::class, 'id_position');
+    // mengambil data dari tabel positions & kolom position_id pada team
+    public function position() {
+        return $this->belongsTo(Position::class, 'position_id');
     }
 }
