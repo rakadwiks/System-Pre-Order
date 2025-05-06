@@ -12,10 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
-<<<<<<< HEAD
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\SupplierResource\RelationManagers;
-=======
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -25,7 +21,6 @@ use App\Models\Provinces;
 use App\Models\Regency;
 
 use function Laravel\Prompts\search;
->>>>>>> raka
 class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
