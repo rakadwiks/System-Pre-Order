@@ -27,18 +27,23 @@ class PreOrderResource extends Resource
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('id_product')
+                    ->label('Product')
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('id_users')
+                    ->label('Name Staff')
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('id_supplier')
+                    ->label('Supplier')
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('total')
+                    ->label('Total')
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('description')
+                    ->label('Description')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -52,18 +57,23 @@ class PreOrderResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('id_product')
+                    ->label('Product')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('id_users')
+                    ->label('Name Staff')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('id_supplier')
+                    ->label('Supplier')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total')
+                    ->label('Total')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('description')
+                    ->label('Description')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
