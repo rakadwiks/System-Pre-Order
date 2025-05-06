@@ -12,8 +12,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
+<<<<<<< HEAD
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SupplierResource\RelationManagers;
+=======
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Http;
+use App\Filament\Resources\SupplierResource\RelationManagers;
+use App\Models\Provinces;
+use App\Models\Regency;
+
+use function Laravel\Prompts\search;
+>>>>>>> raka
 class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
@@ -38,12 +50,21 @@ class SupplierResource extends Resource
                 Forms\Components\TextInput::make('address')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('province')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('region')
-                    ->required()
-                    ->maxLength(255),
+                Select::make('province_id')
+                    ->label('Province')
+                    ->options(Provinces::all()->pluck('name', 'id'))
+                    ->reactive()
+                    ->searchable()
+                    ->afterStateUpdated(fn ($set) => $set('regency_id', null)),
+                
+                Select::make('regency_id')
+                    ->label('Regency')
+                    ->options(fn (callable $get) => 
+                        Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
+                    ->reactive()
+                    ->searchable(),
+                
+
                 Forms\Components\TextInput::make('country')
                     ->required()
                     ->maxLength(255),
@@ -66,9 +87,9 @@ class SupplierResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('address')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('province')
+                TextColumn::make('province.name')->label('Provinsi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('region')
+                TextColumn::make('regency.name')->label('Kabupaten')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('country')
                     ->searchable(),
@@ -95,6 +116,11 @@ class SupplierResource extends Resource
                 ]),
             ]);
     }
+    public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()->with(['province']);
+}
+
 
     public static function getRelations(): array
     {
