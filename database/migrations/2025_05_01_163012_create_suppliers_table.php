@@ -17,8 +17,8 @@ return new class extends Migration
             $table->integer('phone');
             $table->string('email')->unique();
             $table->string('address');
-            $table->string('province');
-            $table->string('region');
+            $table->string('province_id');
+            $table->string('regency_id');
             $table->string('country');
             $table->string('postal_code');
             $table->timestamps();
