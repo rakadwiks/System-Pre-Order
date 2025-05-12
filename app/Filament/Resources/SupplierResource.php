@@ -4,15 +4,22 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Regency;
 use App\Models\Supplier;
 use Filament\Forms\Form;
+use App\Models\Provinces;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use function Laravel\Prompts\search;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 use App\Filament\Resources\SupplierResource\RelationManagers;
 class SupplierResource extends Resource
 {
@@ -30,20 +37,32 @@ class SupplierResource extends Resource
                 Forms\Components\TextInput::make('phone')
                     ->tel()
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->maxLength(13),
                 Forms\Components\TextInput::make('email')
                     ->email()
-                    ->required()
+                    ->nullable()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('address')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('province')
+                Select::make('province_id')
+                    ->label('Province')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('region')
+                    ->options(Provinces::all()->pluck('name', 'id'))
+                    ->reactive()
+                    ->searchable()
+                    ->afterStateUpdated(fn ($set) => $set('regency_id', null)),
+                
+                Select::make('regency_id')
+                    ->label('Regency')
                     ->required()
-                    ->maxLength(255),
+                    ->options(fn (callable $get) => 
+                        Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
+                    ->reactive()
+                    ->searchable(),
+                
+
                 Forms\Components\TextInput::make('country')
                     ->required()
                     ->maxLength(255),
@@ -66,9 +85,9 @@ class SupplierResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('address')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('province')
+                TextColumn::make('province.name')->label('Provinsi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('region')
+                TextColumn::make('regency.name')->label('Kabupaten')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('country')
                     ->searchable(),
@@ -86,6 +105,7 @@ class SupplierResource extends Resource
             ->filters([
                 //
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
@@ -95,6 +115,11 @@ class SupplierResource extends Resource
                 ]),
             ]);
     }
+    public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()->with(['province']);
+}
+
 
     public static function getRelations(): array
     {

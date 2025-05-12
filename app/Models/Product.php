@@ -8,4 +8,17 @@ class Product extends Model
 {
     use HasFactory;
     protected $guarded = [];
+   
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, );
+    }
+
+    public function preOrder()
+    {
+        return $this->hasMany(PreOrder::class);
+    }
+
+
+
 }
