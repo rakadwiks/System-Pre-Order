@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\PreOrderWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -17,7 +18,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Widgets\StatsOverview; 
+use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\TeamInfoWidget;
 
 class DashboardPanelProvider extends PanelProvider
 {
@@ -38,9 +40,9 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
                 StatsOverview::class,
+                PreOrderWidget::class,
+                TeamInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

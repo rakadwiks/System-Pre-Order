@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('id_supplier');
             $table->integer('total');
             $table->string('description');
+            $table->enum('status', ['submitted', 'approved', 'rejected', 'completed', 'cancelled'])->default('submitted');
             $table->timestamps();
         });
     }
