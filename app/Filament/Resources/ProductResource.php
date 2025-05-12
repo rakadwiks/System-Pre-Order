@@ -156,7 +156,7 @@ class ProductResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('supplier'); // 👈 Tambahkan ini
+            ->with('supplier'); // menampilkan view detail
     }
     
     public static function getRelations(): array
