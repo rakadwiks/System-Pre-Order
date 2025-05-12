@@ -4,23 +4,23 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Regency;
 use App\Models\Supplier;
 use Filament\Forms\Form;
+use App\Models\Provinces;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use function Laravel\Prompts\search;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Http;
-use App\Filament\Resources\SupplierResource\RelationManagers;
-use App\Models\Provinces;
-use App\Models\Regency;
 
-use function Laravel\Prompts\search;
+use App\Filament\Resources\SupplierResource\RelationManagers;
 class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
@@ -37,16 +37,18 @@ class SupplierResource extends Resource
                 Forms\Components\TextInput::make('phone')
                     ->tel()
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->maxLength(13),
                 Forms\Components\TextInput::make('email')
                     ->email()
-                    ->required()
+                    ->nullable()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('address')
                     ->required()
                     ->maxLength(255),
                 Select::make('province_id')
                     ->label('Province')
+                    ->required()
                     ->options(Provinces::all()->pluck('name', 'id'))
                     ->reactive()
                     ->searchable()
@@ -54,6 +56,7 @@ class SupplierResource extends Resource
                 
                 Select::make('regency_id')
                     ->label('Regency')
+                    ->required()
                     ->options(fn (callable $get) => 
                         Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
                     ->reactive()
@@ -102,6 +105,7 @@ class SupplierResource extends Resource
             ->filters([
                 //
             ])
+
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

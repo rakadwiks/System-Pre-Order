@@ -20,7 +20,7 @@ class DivisionResource extends Resource
     protected static ?string $model = Division::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog';
-    protected static ?string $navigationGroup = 'Maters'; // navigasi group
+    protected static ?string $navigationGroup = 'Master'; // navigasi group
 
     public static function form(Form $form): Form
     {

@@ -10,6 +10,10 @@ class Supplier extends Model
     use HasFactory;
     protected $guarded = [];
 
+    public function product()
+    {
+        return $this->belongsTo(Product::class, );
+    }
     public function province()
     {
         return $this->belongsTo(Provinces::class, 'province_id');
