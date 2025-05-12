@@ -13,13 +13,10 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
-use Filament\Tables\Actions\ViewAction;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Placeholder;
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Filament\Resources\ProductResource\Pages\ViewProduct;
 use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationManager;
 
@@ -38,13 +35,13 @@ class ProductResource extends Resource
             // membuat code barang otomatis 
             ->schema([
                 Forms\Components\TextInput::make('code_product')
-                ->default(function () {
-                    $randomNumber = random_int(1, 9999);
-                    return 'IT-' . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
-                })
-                ->readOnly()
-                ->disabled()
-                ->dehydrated(),
+                    ->default(function () {
+                        $randomNumber = random_int(1, 9999);
+                        return 'IT-' . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
+                    })
+                    ->readOnly()
+                    ->disabled()
+                    ->dehydrated(),
                 Forms\Components\TextInput::make('name_product')
                     ->required()
                     ->maxLength(255),
@@ -54,13 +51,16 @@ class ProductResource extends Resource
                     ->reactive()
                     ->visible(!$isView)
                     ->searchable(),
-                
+
                 Forms\Components\TextInput::make('stock')
                     ->label('Quantity')
                     ->numeric()
                     ->required()
                     ->live()
-                    ->hidden($isEdit), // disembunyikan saat edit
+                    ->hidden($isEdit) // disembunyikan saat edit
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        $set('final_stock', self::hitungFinalStock($get));
+                    }),
                 Forms\Components\TextInput::make('price')
                     ->label('Price')
                     ->required()
@@ -84,20 +84,20 @@ class ProductResource extends Resource
                                 e.target.value = Number(value).toLocaleString("id-ID");
                             }
                         })',
-                    ]),                        
-                Forms\Components\TextInput::make('final_stock')
-                        ->label('Stock')
-                        ->numeric()
-                        ->default(fn (Get $get) => $get('stock') + $get('in_stock') - $get('out_stock'))
-                        ->readOnly()
-                        ->disabled()
-                        ->dehydrated(),
-        ]);
+                    ]),
+                // Output final stock
+                TextInput::make('final_stock')
+                    ->numeric()
+                    ->required()
+                    ->label('Final Stock')
+                    ->disabled(), // agar tidak bisa diisi manual
+
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code_product')
@@ -127,7 +127,7 @@ class ProductResource extends Resource
                     ->label('Stock')
                     ->numeric()
                     ->sortable()
-                    ->color(fn (string $state): string => match (true) {
+                    ->color(fn(string $state): string => match (true) {
                         intval($state) < 0 => 'danger', // Warna merah jika nilai negatif
                         default => 'success', // Warna hijau jika nilai positif atau 0
                     }),
@@ -144,8 +144,8 @@ class ProductResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),                
-                Tables\Actions\ViewAction::make(),                
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -156,12 +156,12 @@ class ProductResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('supplier'); // menampilkan view detail
+            ->with('supplier'); // menambahkan data relation pada supplier
     }
-    
+
     public static function getRelations(): array
     {
-        
+
         return [
             SupplierRelationManager::class,
         ];
@@ -171,9 +171,7 @@ class ProductResource extends Resource
     {
         return [
             'index' => Pages\ListProducts::route('/'),
-            'view' => ViewProduct::route('/{record}'), 
-            // 'create' => Pages\CreateProduct::route('/create'),
-            // 'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'view' => ViewProduct::route('/{record}'),
         ];
     }
 
@@ -200,5 +198,10 @@ class ProductResource extends Resource
     public static function canDelete(Model $record): bool
     {
         return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    protected static function hitungFinalStock(Get $get): int
+    {
+        return (int) $get('stock') + (int) $get('in_stock') - (int) $get('out_stock');
     }
 }

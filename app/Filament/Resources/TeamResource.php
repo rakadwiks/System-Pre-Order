@@ -11,10 +11,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\TeamResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\TeamResource\RelationManagers;
 
 class TeamResource extends Resource
 {
@@ -95,28 +92,28 @@ class TeamResource extends Resource
         ];
     }
 
-     // Middleware untuk Hak Akses Superadmin, Admin, User
-     public static function canViewAny(): bool
-     {
-         return Auth::user()?->hasRole(['superadmin', 'admin']);
-     }
-     public static function canView(Model $record): bool
-     {
-         return Auth::user()?->hasRole(['superadmin', 'admin']);
-     }
- 
-     public static function canCreate(): bool
-     {
-         return Auth::user()?->hasRole(['superadmin', 'admin']);
-     }
- 
-     public static function canEdit(Model $record): bool
-     {
-         return Auth::user()?->hasRole(['superadmin', 'admin']);
-     }
- 
-     public static function canDelete(Model $record): bool
-     {
-         return Auth::user()?->hasRole(['superadmin', 'admin']);
-     }
+    // Middleware untuk Hak Akses Superadmin, Admin, User
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+    public static function canView(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
 }

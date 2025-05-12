@@ -1,5 +1,4 @@
 <?php 
-// app/Filament/Resources/ProductResource/RelationManagers/SupplierRelationManager.php
 
 namespace App\Filament\Resources\ProductResource\RelationManagers;
 
