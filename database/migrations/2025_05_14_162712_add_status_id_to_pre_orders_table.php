@@ -12,19 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pre_orders', function (Blueprint $table) {
-             $table->foreignId('status_id')->nullable()->constrained()->nullOnDelete();
+            $table
+                ->foreignId('status_id')
+                ->constrained('status_orders', 'id')
+                ->onDelete('restrict')
+                ->default(1)
+                ->change();
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+    public function down()
     {
         Schema::table('pre_orders', function (Blueprint $table) {
             $table->dropForeign(['status_id']);
-        $table->dropColumn('status_id');
+            $table->dropColumn('status_id');
         });
     }
 };
-

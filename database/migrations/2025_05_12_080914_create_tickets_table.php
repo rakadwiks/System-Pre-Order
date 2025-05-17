@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pre_orders', function (Blueprint $table) {
+        Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            $table->string('code_po');
-            $table->string('slug')->unique();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->string('code_ticket')->unique();
+            $table->string('slug')->nullable();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->integer('total');
+            $table->text('description');
+            $table->string('photos')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pre_orders');
+        Schema::dropIfExists('tickets');
     }
 };

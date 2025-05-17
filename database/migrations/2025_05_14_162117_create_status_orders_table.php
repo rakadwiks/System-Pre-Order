@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tickets', function (Blueprint $table) {
+        Schema::create('status_orders', function (Blueprint $table) {
             $table->id();
-            $table->string('code_ticket')->unique();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->text('description');
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('status_orders');
     }
 };

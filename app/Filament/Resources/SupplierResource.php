@@ -57,8 +57,6 @@ class SupplierResource extends Resource
                     Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
                     ->reactive()
                     ->searchable(),
-
-
                 Forms\Components\TextInput::make('country')
                     ->required()
                     ->maxLength(255),

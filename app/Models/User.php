@@ -40,6 +40,9 @@ use Illuminate\Support\Facades\Log;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
+ * @property-read \App\Models\Team $Team
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Ticket> $Ticket
+ * @property-read int|null $ticket_count
  * @mixin \Eloquent
  */
 class User extends Authenticatable

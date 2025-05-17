@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
 use Filament\Tables;
 use App\Models\Product;
 use Filament\Forms\Get;
@@ -13,12 +14,14 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\Pages\ViewProduct;
 use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationManager;
+use Filament\Infolists\Components\Section as ComponentsSection;
 
 class ProductResource extends Resource
 {
@@ -34,63 +37,62 @@ class ProductResource extends Resource
         return $form
             // membuat code barang otomatis 
             ->schema([
-                Forms\Components\TextInput::make('code_product')
-                    ->default(function () {
-                        $randomNumber = random_int(1, 9999);
-                        return 'IT-' . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
-                    })
-                    ->readOnly()
-                    ->disabled()
-                    ->dehydrated(),
-                Forms\Components\TextInput::make('name_product')
-                    ->required()
-                    ->maxLength(255),
-                Select::make('supplier_id')
-                    ->label('Supplier')
-                    ->options(Supplier::all()->pluck('name_supplier', 'id'))
-                    ->reactive()
-                    ->visible(!$isView)
-                    ->searchable(),
+                Section::make()
+                    ->columns(4)
+                    ->schema([
+                        Forms\Components\TextInput::make('code_product')
+                            ->default(function () {
+                                $randomNumber = random_int(1, 9999);
+                                return 'IT-' . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
+                            })
+                            ->readOnly()
+                            ->disabled()
+                            ->dehydrated(),
+                        Forms\Components\TextInput::make('name_product')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2), // mengatur column
+                        Select::make('supplier_id')
+                            ->label('Supplier')
+                            ->options(Supplier::all()->pluck('name_supplier', 'id'))
+                            ->reactive()
+                            ->visible(!$isView)
+                            ->searchable()
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 1), // mengatur column
 
-                Forms\Components\TextInput::make('stock')
-                    ->label('Quantity')
-                    ->numeric()
-                    ->required()
-                    ->live()
-                    ->hidden($isEdit) // disembunyikan saat edit
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        $set('final_stock', self::hitungFinalStock($get));
-                    }),
-                Forms\Components\TextInput::make('price')
-                    ->label('Price')
-                    ->required()
-                    ->reactive()
-                    ->afterStateHydrated(function ($state, callable $set) {
-                        if ($state) {
-                            $formatted = number_format($state, 0, ',', '.');
-                            $set('price', $formatted);
-                        }
-                    })
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        // Hapus titik sebelum disimpan ke state
-                        $numeric = str_replace('.', '', $state);
-                        $set('price', intval($numeric));
-                    })
-                    ->extraAttributes([
-                        'x-data' => '{}',
-                        'x-init' => 'this.addEventListener("input", function(e) {
-                            let value = e.target.value.replace(/\./g, "");
-                            if (!isNaN(value)) {
-                                e.target.value = Number(value).toLocaleString("id-ID");
-                            }
-                        })',
-                    ]),
-                // Output final stock
-                TextInput::make('final_stock')
-                    ->numeric()
-                    ->required()
-                    ->label('Final Stock')
-                    ->disabled(), // agar tidak bisa diisi manual
+                        Forms\Components\TextInput::make('stock')
+                            ->label('Quantity')
+                            ->numeric()
+                            ->required()
+                            ->live()
+                            ->hidden($isEdit) // disembunyikan saat edit
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                $set('final_stock', self::countFinalStock($get));
+                            }),
+                        Forms\Components\TextInput::make('price')
+                            ->label('Price')
+                            ->required()
+                            ->reactive()
+                            ->afterStateHydrated(function ($state, callable $set) {
+                                if ($state) {
+                                    $formatted = number_format($state, 0, ',', '.');
+                                    $set('price', $formatted);
+                                }
+                            })
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                // Hapus titik sebelum disimpan ke state
+                                $numeric = str_replace('.', '', $state);
+                                $set('price', intval($numeric));
+                            })
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 3),
+                        // Output final stock
+                        TextInput::make('final_stock')
+                            ->label('Stock')
+                            ->numeric()
+                            ->required()
+                            ->disabled(), // agar tidak bisa diisi manual
+
+                    ])
 
             ]);
     }
@@ -109,7 +111,7 @@ class ProductResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Price')
-                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
+                    ->money('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('stock')
                     ->label('Quantity')
@@ -200,7 +202,7 @@ class ProductResource extends Resource
         return Auth::user()?->hasRole(['superadmin', 'admin']);
     }
 
-    protected static function hitungFinalStock(Get $get): int
+    protected static function countFinalStock(Get $get): int
     {
         return (int) $get('stock') + (int) $get('in_stock') - (int) $get('out_stock');
     }

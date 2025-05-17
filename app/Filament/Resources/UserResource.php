@@ -8,6 +8,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
@@ -40,17 +41,21 @@ class UserResource extends Resource
                     ->preload() // preload untuk menghindari delay
                     ->required(),
                 Forms\Components\TextInput::make('password')
+                    ->label('Password')
                     ->password()
-                    ->required()
-                    ->maxLength(255),
-                CheckboxList::make('role')
+                    ->maxLength(255)
+                    ->required(fn(string $context) => $context === 'create')
+                    ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
+                    ->dehydrated(fn($state) => filled($state)),
+                Radio::make('role')
                     ->label('Roles')
                     ->options([
                         'user' => 'User',
                         'admin' => 'Admin',
                         'superadmin' => 'Superadmin',
                     ])
-                    ->columns(3) // mengatur kolom
+                    ->inline()
+                    ->inlineLabel(false)
                     ->default(['user'])  // Defaultnya adalah 'user' ketika registrasi
                     ->required(),
             ]);

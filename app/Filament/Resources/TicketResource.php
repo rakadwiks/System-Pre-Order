@@ -4,16 +4,25 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
-use App\Models\Status;
 use App\Models\Ticket;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Models\statusOrder;
 use Illuminate\Support\Str;
+use App\Models\StatusTicket;
 use Filament\Resources\Resource;
+use Filament\Tables\Filters\Filter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Filters\SelectFilter;
 use App\Filament\Resources\TicketResource\Pages;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class TicketResource extends Resource
 {
@@ -42,28 +51,43 @@ class TicketResource extends Resource
                             ->default(function () {
                                 return Auth::id(); // Mengambil user_id yang sedang login
                             }),
-                        Forms\Components\MarkdownEditor::make('description')
-                            ->toolbarButtons([
-                                'attachFiles',
-                                'blockquote',
-                                'bold',
-                                'bulletList',
-                                'codeBlock',
-                                'heading',
-                                'italic',
-                                'link',
-                                'orderedList',
-                                'redo',
-                                'strike',
-                                'table',
-                                'undo',
-                            ]),
-                        Hidden::make('status_id')
-                            ->default(fn() => Status::where('name', 'requested')
+                        Forms\Components\Textarea::make('description')
+                            ->label('Description')
+                            ->required()
+                            ->rows(5)
+                            ->columnSpan(2),
+                        FileUpload::make('photos')
+                            ->label('Photos')
+                            ->image()
+                            ->disk('public')
+                            ->directory('ticket-photos')
+                            ->multiple()
+                            ->preserveFilenames()
+                            ->reorderable()
+                            ->downloadable()
+                            ->previewable()
+                            // Saat form edit: konversi dari associative array ke array biasa
+                            ->formatStateUsing(function ($state) {
+                                if (is_string($state)) {
+                                    $state = json_decode($state, true);
+                                }
+                                return is_array($state) ? array_values($state) : [];
+                            })
+                            ->dehydrateStateUsing(function (?array $state) {
+                                if (! $state) return null;
+                                return collect($state)
+                                    ->mapWithKeys(fn($file) => [Str::uuid()->toString() => $file])
+                                    ->toArray();
+                            })
+                            ->helperText('Upload photo PNG/JPG maksimal 2MB.'),
+                        Hidden::make('status_ticket_id')
+                            ->default(fn() => StatusTicket::where('name', 'requested')
+                                ->value('id')),
+                        Hidden::make('status_order_id')
+                            ->default(fn() => statusOrder::where('name', 'requested')
                                 ->value('id')),
 
                     ])
-                //mmebuat nomer PO otomatis
             ]);
     }
 
@@ -74,13 +98,30 @@ class TicketResource extends Resource
                 Tables\Columns\TextColumn::make('code_ticket')
                     ->label('Code Ticket')
                     ->searchable(),
+                ImageColumn::make('photos')
+                    ->label('Photo')
+                    ->getStateUsing(function ($record) {
+                        // Ubah JSON string menjadi array
+                        $photos = is_string($record->photos)
+                            ? json_decode($record->photos, true)
+                            : $record->photos;
+
+                        // Ambil value pertama dari associative array
+                        if (is_array($photos) && count($photos) > 0) {
+                            $firstPath = array_values($photos)[0];
+                            return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
+                        }
+
+                        return null;
+                    })
+                    ->disk('public'),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('User Complaint')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Description')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status.name')
+                Tables\Columns\TextColumn::make('statusTicket.name')
                     ->label('Status')
                     ->badge()
                     ->searchable()
@@ -103,36 +144,60 @@ class TicketResource extends Resource
                 //
             ])
             ->actions([
-                // Tables\Actions\EditAction::make(),
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('Approved')
-                        ->label('Approved')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->action(function ($record) {
-                            // Ambil ID untuk status 'approved'
-                            $approvedStatusId = Status::where('name', 'approved')->value('id');
-                            $record->update(['status_id' => $approvedStatusId]);
-                        })
-                        ->requiresConfirmation()
-                        ->modalHeading('Approve Ticket')
-                        ->modalSubheading('Are you sure you want to approve this ticket?')  // Deskripsi modal konfirmasi
-                        ->modalButton('Yes, approve'),
-                    Tables\Actions\Action::make('Rejected')
-                        ->label('Rejected')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->action(function ($record) {
-                            // Ambil ID untuk status 'approved'
-                            $rejectedStatusId = Status::where('name', 'rejected')->value('id');
-                            $record->update(['status_id' => $rejectedStatusId]);
-                        })
-                        ->requiresConfirmation()
-                        ->modalHeading('Reject Ticket')
-                        ->modalSubheading('Are you sure you want to reject this ticket?')  // Deskripsi modal konfirmasi
-                        ->modalButton('Yes, reject'),
-                ]),
+                Tables\Actions\Action::make('Approved')
+                    ->hiddenLabel()
+                    ->tooltip('Approved')
+                    ->button()
+                    ->size('xs')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('info')
+                    ->hidden(fn() => Auth::user()?->hasRole('user')) // menyembunyikan role user
+                    ->visible(function ($record) {
+                        // Cek jika status_id adalah 'requested' (status awal)
+                        return $record->status_ticket_id == StatusTicket::where('name', 'requested')->value('id');
+                    })
+                    ->action(function ($record) {
+                        // Update status ke 'approved'
+                        $approvedStatusId = StatusTicket::where('name', 'approved')->value('id');
+                        $record->update(['status_ticket_id' => $approvedStatusId]);
+                    })
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalHeading('Tickets')
+                    ->modalSubheading('Are you sure you want to approved this Tickets ?')  // Deskripsi modal konfirmasi
+                    ->modalButton('Yes'),
 
+                Tables\Actions\Action::make('Rejected')
+                    ->hiddenLabel()
+                    ->tooltip('Rejected')
+                    ->button()
+                    ->size('xs')
+                    ->color('info')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->hidden(fn() => Auth::user()?->hasRole('user')) // menyembunyikan role user
+                    ->visible(function ($record) {
+                        // Cek jika status_ticket_id adalah 'requested' (status awal)
+                        return $record->status_ticket_id == StatusTicket::where('name', 'requested')->value('id');
+                    })
+                    ->action(function ($record) {
+                        // Update status ke 'rejected'
+                        $rejectedStatusId = StatusTicket::where('name', 'rejected')->value('id');
+                        $record->update(['status_ticket_id' => $rejectedStatusId]);
+                    })
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-x-circle')
+                    ->modalHeading('Tickets')
+                    ->modalSubheading('Are you sure you want to rejected this Tickets ?')  // Deskripsi modal konfirmasi
+                    ->modalButton('Yes'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()->hidden(fn() => Auth::user()?->hasRole('admin')), // menyembunyikan role user,
+                    Tables\Actions\ViewAction::make(),
+                ])
+                    ->hiddenLabel()
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->color('gray')
+                    ->size('xs'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -152,17 +217,11 @@ class TicketResource extends Resource
     {
         return [
             'index' => Pages\ListTickets::route('/'),
+            // 'view' => Pages\EditTicket::route('/{record}'),
         ];
     }
 
-    // membuat default request untuk user
-    protected static function booted()
-    {
-        static::creating(function ($ticket) {
-            $ticket->status_id = Status::where('name', 'requested')->value('id');
-        });
-    }
-
+    //menambahkan fitur notifikasi badge pada sidebar
     public static function getNavigationBadge(): ?string
     {
         $user = Auth::user();
@@ -170,9 +229,15 @@ class TicketResource extends Resource
         if (! $user?->hasRole(['superadmin', 'admin'])) {
             return null;
         }
-        $count = Ticket::whereHas('status', function ($query) {
+        $count = Ticket::whereHas('statusTicket', function ($query) {
             $query->where('name', 'requested');
         })->count();
         return $count > 0 ? (string) $count : null;
+    }
+
+    // Middleware untuk Hak Akses Superadmin, Admin, User
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'admin']);
     }
 }

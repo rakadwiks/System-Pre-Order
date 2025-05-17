@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-             $table
-                    ->foreignId('status_id')
-                    ->constrained('statuses', 'id')
-                    ->onDelete('cascade')
-                    ->default(1);
+            $table
+                ->foreignId('status_order_id')
+                ->constrained('status_orders', 'id')
+                ->onDelete('restrict')
+                ->default(1)
+                ->change();
         });
     }
 
@@ -26,8 +27,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tickets', function (Blueprint $table) {
-            $table->dropForeign(['status_id']);
-            $table->dropColumn('status_id');
+            $table->dropForeign(['status_order_id']);
+            $table->dropColumn('status_order_id');
         });
     }
 };

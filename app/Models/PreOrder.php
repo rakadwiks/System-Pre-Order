@@ -2,60 +2,39 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-/**
- * 
- *
- * @property int $id
- * @property string $code_po
- * @property int $product_id
- * @property int $user_id
- * @property int $total
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Product $product
- * @property-read \App\Models\User $users
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereCodePo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereProductId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereTotal($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereUserId($value)
- * @mixin \Eloquent
- */
+
 class PreOrder extends Model
 {
     use HasFactory;
     protected $guarded = [];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
- 
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-        public function ticket()
+    public function ticket()
     {
         return $this->belongsTo(Ticket::class);
     }
-        public function status()
+    public function status()
     {
-        return $this->belongsTo(Status::class);
+        return $this->belongsTo(statusOrder::class);
     }
 
     protected static function booted()
     {
         static::created(function ($preOrder) {
             $product = Product::find($preOrder->product_id);
-    
+
             if ($product) {
                 $outStock = intval($preOrder->total); // jumlah preorder
                 $product->out_stock += $outStock;
@@ -64,7 +43,18 @@ class PreOrder extends Model
                 $product->save();
             }
         });
+        // membuat default ketika input
+        static::creating(function ($preOrder) {
+            $preOrder->slug = Str::slug($preOrder->code_po);
+        });
+        // membuat default request untuk user
+        static::creating(function ($model) {
+            $model->status_id = $model->status_id ?? statusOrder::where('name', 'requested')->value('id');
+        });
     }
-    
-
+    // memanggil menggunakan slug untuk edit, view
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             RegionSeeder::class,
             StatusSeeder::class,
+            StatusTicketSeeder::class,
         ]);
     }
 }
