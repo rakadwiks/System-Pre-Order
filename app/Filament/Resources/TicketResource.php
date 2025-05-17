@@ -11,18 +11,12 @@ use App\Models\statusOrder;
 use Illuminate\Support\Str;
 use App\Models\StatusTicket;
 use Filament\Resources\Resource;
-use Filament\Tables\Filters\Filter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Filters\SelectFilter;
 use App\Filament\Resources\TicketResource\Pages;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class TicketResource extends Resource
 {

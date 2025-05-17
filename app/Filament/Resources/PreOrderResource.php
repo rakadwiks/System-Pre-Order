@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
-use App\Models\User;
 use Filament\Tables;
-use App\Models\Status;
 use App\Models\Ticket;
 use App\Models\Product;
 use App\Models\PreOrder;
@@ -21,11 +19,9 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\MultiSelectFilter;
 use App\Filament\Resources\PreOrderResource\Pages;
 use App\Filament\Resources\PreOrderResource\RelationManagers\TicketRelationManager;
 

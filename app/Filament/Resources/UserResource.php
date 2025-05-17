@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\CheckboxList;
 use App\Filament\Resources\UserResource\Pages;
 
 class UserResource extends Resource

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
-use Filament\Forms\Components\Grid;
 use Filament\Tables;
 use App\Models\Product;
 use Filament\Forms\Get;
