@@ -49,40 +49,31 @@ class ProductResource extends Resource
                             ->dehydrated(),
                         Forms\Components\TextInput::make('name_product')
                             ->required()
+                            ->required()
                             ->maxLength(255)
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2), // mengatur column
                         Select::make('supplier_id')
                             ->label('Supplier')
                             ->options(Supplier::all()->pluck('name_supplier', 'id'))
                             ->reactive()
+                            ->required()
                             ->visible(!$isView)
                             ->searchable()
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 1), // mengatur column
-
                         Forms\Components\TextInput::make('stock')
                             ->label('Quantity')
-                            ->numeric()
                             ->required()
-                            ->live()
+                            ->numeric()
+                            ->live() // membuat generet otomatis ketika input quantity pada field quantity
                             ->hidden($isEdit) // disembunyikan saat edit
                             ->afterStateUpdated(function (Get $get, Set $set) {
                                 $set('final_stock', self::countFinalStock($get));
-                            }),
+                            })
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 4),
                         Forms\Components\TextInput::make('price')
                             ->label('Price')
                             ->required()
-                            ->reactive()
-                            ->afterStateHydrated(function ($state, callable $set) {
-                                if ($state) {
-                                    $formatted = number_format($state, 0, ',', '.');
-                                    $set('price', $formatted);
-                                }
-                            })
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                // Hapus titik sebelum disimpan ke state
-                                $numeric = str_replace('.', '', $state);
-                                $set('price', intval($numeric));
-                            })
+                            ->numeric()
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 3),
                         // Output final stock
                         TextInput::make('final_stock')
