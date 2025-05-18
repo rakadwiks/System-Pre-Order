@@ -230,8 +230,8 @@ class TicketResource extends Resource
     }
 
     // Middleware untuk Hak Akses Superadmin, Admin, User
-    public static function canCreate(): bool
-    {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
-    }
+    // public static function canCreate(): bool
+    // {
+    //     // return Auth::user()?->hasRole(['superadmin', 'admin']);
+    // }
 }
