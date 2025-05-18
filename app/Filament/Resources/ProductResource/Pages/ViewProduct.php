@@ -2,14 +2,19 @@
 
 namespace App\Filament\Resources\ProductResource\Pages;
 
-use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Forms\Components\Placeholder;
-use Filament\Infolists\Components\Section;
 use App\Filament\Resources\ProductResource;
-use Filament\Infolists\Components\TextEntry;
+use App\Models\Product;
 
 class ViewProduct extends ViewRecord
 {
     protected static string $resource = ProductResource::class;
+
+    // merubah titel sesuai dengan database
+    public function getTitle(): string
+    {
+        $product = $this->record; // memanggil code product menggunakan record
+        $code = $product->code_product ?? 'Products';
+        return "Products - {$code}";
+    }
 }

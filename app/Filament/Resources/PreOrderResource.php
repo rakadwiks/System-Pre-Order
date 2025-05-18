@@ -160,15 +160,14 @@ class PreOrderResource extends Resource
                 // Filter berdasarkan RENTANG TANGGAL CREATED_AT
                 Filter::make('created_at')
                     ->form([
-                        DatePicker::make('from')->label('Dari Tanggal'),
-                        DatePicker::make('until')->label('Sampai Tanggal'),
+                        DatePicker::make('from')->label('From :'),
+                        DatePicker::make('until')->label('Until :'),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
                             ->when($data['from'], fn($q) => $q->whereDate('created_at', '>=', $data['from']))
                             ->when($data['until'], fn($q) => $q->whereDate('created_at', '<=', $data['until']));
                     }),
-
                 SelectFilter::make('status_id')
                     ->label('Status')
                     ->options(
@@ -176,7 +175,7 @@ class PreOrderResource extends Resource
                     )
                     ->multiple() // Ini kunci untuk multi-select
                     ->searchable()
-                    ->placeholder('Select statu...')
+                    ->placeholder('Select status..')
                     ->query(function ($query, array $data) {
                         if (! empty($data['values'])) {
                             $query->whereIn('status_id', $data['values']);
@@ -232,7 +231,7 @@ class PreOrderResource extends Resource
                     })
                     ->action(function ($record) {
                         // 1. Ambil ID status 'approved' dari status_order
-                        $approvedStatusId = StatusOrder::where('name', 'completed')->value('id');
+                        $approvedStatusId = StatusOrder::where('name', 'rejected')->value('id');
 
                         // 2. Update status_id pada record (orders)
                         $record->update([

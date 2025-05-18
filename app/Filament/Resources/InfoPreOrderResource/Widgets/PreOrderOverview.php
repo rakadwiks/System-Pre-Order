@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\InfoRequestResource\Widgets;
+namespace App\Filament\Resources\InfoPreOrderResource\Widgets;
 
 use App\Models\User;
 use App\Models\Ticket;
 use App\Models\PreOrder;
-use App\Models\Status;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Card;
 
 class PreOrderOverview extends BaseWidget
 {
@@ -40,7 +38,7 @@ class PreOrderOverview extends BaseWidget
                 ->color('danger')
                 ->icon('heroicon-o-check-circle'),
             Stat::make('Completed', PreOrder::whereHas('status', fn($q) => $q->where('name', 'completed'))->count())
-                ->description('Order is complete')
+                ->description('Order is completed')
                 ->color('info')
                 ->icon('heroicon-o-check-circle'),
         ];

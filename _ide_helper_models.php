@@ -27,6 +27,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereNameDivision($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property string $slug
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Division whereSlug($value)
  */
 	class Division extends \Eloquent {}
 }
@@ -47,6 +49,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Position whereNamePosition($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Position whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property string $slug
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Position whereSlug($value)
  */
 	class Position extends \Eloquent {}
 }
@@ -57,13 +61,18 @@ namespace App\Models{
  *
  * @property int $id
  * @property string $code_po
+ * @property string $slug
  * @property int $product_id
  * @property int $user_id
  * @property int $total
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $ticket_id
+ * @property int $status_id
  * @property-read \App\Models\Product $product
- * @property-read \App\Models\User $users
+ * @property-read \App\Models\statusOrder $status
+ * @property-read \App\Models\Ticket|null $ticket
+ * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder query()
@@ -71,17 +80,12 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereStatusId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereTicketId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereUserId($value)
- * @property int|null $ticket_id
- * @property int|null $status_id
- * @property-read \App\Models\Ticket|null $ticket
- * @property-read \App\Models\User $user
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereStatusId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PreOrder whereTicketId($value)
- * @mixin \Eloquent
- * @property-read \App\Models\statusOrder $status
  */
 	class PreOrder extends \Eloquent {}
 }
@@ -92,6 +96,7 @@ namespace App\Models{
  *
  * @property int $id
  * @property string $code_product
+ * @property string $slug
  * @property string $name_product
  * @property int $supplier_id
  * @property string $price
@@ -115,10 +120,10 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereNameProduct($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereOutStock($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product wherePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereStock($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereSupplierId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Product whereUpdatedAt($value)
- * @mixin \Eloquent
  */
 	class Product extends \Eloquent {}
 }
@@ -221,6 +226,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Supplier whereRegencyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Supplier whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property string $slug
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Supplier whereSlug($value)
  */
 	class Supplier extends \Eloquent {}
 }
@@ -247,6 +254,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Team wherePositionId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Team whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property string $slug
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Team whereSlug($value)
  */
 	class Team extends \Eloquent {}
 }
@@ -257,13 +266,18 @@ namespace App\Models{
  *
  * @property int $id
  * @property string $code_ticket
+ * @property string|null $slug
  * @property int $user_id
  * @property string $description
+ * @property array<array-key, mixed>|null $photos
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property int $status_id
+ * @property int $status_ticket_id
+ * @property int $status_order_id
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PreOrder> $preOrder
  * @property-read int|null $pre_order_count
+ * @property-read \App\Models\statusOrder $statusOrder
+ * @property-read \App\Models\StatusTicket $statusTicket
  * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket newQuery()
@@ -272,16 +286,12 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereStatusId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereUserId($value)
- * @mixin \Eloquent
- * @property int $status_ticket_id
- * @property int $status_order_id
- * @property-read \App\Models\statusOrder $statusOrder
- * @property-read \App\Models\StatusTicket $statusTicket
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket wherePhotos($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereStatusOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereStatusTicketId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ticket whereUserId($value)
  */
 	class Ticket extends \Eloquent {}
 }

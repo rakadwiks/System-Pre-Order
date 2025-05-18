@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Doctrine\DBAL\Schema\Column;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Ticket;
@@ -28,28 +29,36 @@ class TicketResource extends Resource
     {
         return $form
             ->schema([
-                Section::make()
+                Section::make([
+                    Forms\Components\TextInput::make('code_ticket')
+                        ->default(function () {
+                            $date = date('ymd');
+                            $randomNumber = mt_rand(100, 999); // 4 digit
+                            $randomString = strtoupper(Str::random(3)); // 3 huruf kapital
+                            return 'TX-' . $date . '-' . $randomNumber . '-' . $randomString;
+                        })
+                        ->readOnly()
+                        ->disabled()
+                        ->dehydrated(),
+                    // Field Hidden untuk user_id (Staff)
+                    Forms\Components\Hidden::make('user_id')
+                        ->default(function () {
+                            return Auth::id(); // Mengambil user_id yang sedang login
+                        }),
+                    Forms\Components\Textarea::make('description')
+                        ->label('Description')
+                        ->required()
+                        ->rows(3),
+                    Hidden::make('status_ticket_id')
+                        ->default(fn() => StatusTicket::where('name', 'requested')
+                            ->value('id')),
+                    Hidden::make('status_order_id')
+                        ->default(fn() => statusOrder::where('name', 'requested')
+                            ->value('id')),
+                ])->compact(),
+
+                Section::make('Upload Error')
                     ->schema([
-                        Forms\Components\TextInput::make('code_ticket')
-                            ->default(function () {
-                                $date = date('ymd');
-                                $randomNumber = mt_rand(100, 999); // 4 digit
-                                $randomString = strtoupper(Str::random(3)); // 3 huruf kapital
-                                return 'TX-' . $date . '-' . $randomNumber . '-' . $randomString;
-                            })
-                            ->readOnly()
-                            ->disabled()
-                            ->dehydrated(),
-                        // Field Hidden untuk user_id (Staff)
-                        Forms\Components\Hidden::make('user_id')
-                            ->default(function () {
-                                return Auth::id(); // Mengambil user_id yang sedang login
-                            }),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
-                            ->required()
-                            ->rows(5)
-                            ->columnSpan(2),
                         FileUpload::make('photos')
                             ->label('Photos')
                             ->image()
@@ -74,14 +83,8 @@ class TicketResource extends Resource
                                     ->toArray();
                             })
                             ->helperText('Upload photo PNG/JPG maksimal 2MB.'),
-                        Hidden::make('status_ticket_id')
-                            ->default(fn() => StatusTicket::where('name', 'requested')
-                                ->value('id')),
-                        Hidden::make('status_order_id')
-                            ->default(fn() => statusOrder::where('name', 'requested')
-                                ->value('id')),
-
                     ])
+                    ->compact()
             ]);
     }
 
@@ -184,14 +187,10 @@ class TicketResource extends Resource
                     ->modalHeading('Tickets')
                     ->modalSubheading('Are you sure you want to rejected this Tickets ?')  // Deskripsi modal konfirmasi
                     ->modalButton('Yes'),
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make()->hidden(fn() => Auth::user()?->hasRole('admin')), // menyembunyikan role user,
-                    Tables\Actions\ViewAction::make(),
-                ])
-                    ->hiddenLabel()
-                    ->icon('heroicon-m-ellipsis-vertical')
-                    ->color('gray')
-                    ->size('xs'),
+                Tables\Actions\EditAction::make()->hidden(fn() => Auth::user()?->hasRole('admin')), // menyembunyikan role user,
+                Tables\Actions\ViewAction::make(),
+
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -211,7 +210,7 @@ class TicketResource extends Resource
     {
         return [
             'index' => Pages\ListTickets::route('/'),
-            // 'view' => Pages\EditTicket::route('/{record}'),
+            'view' => Pages\ViewTicket::route('/{record}'),
         ];
     }
 
@@ -228,10 +227,4 @@ class TicketResource extends Resource
         })->count();
         return $count > 0 ? (string) $count : null;
     }
-
-    // Middleware untuk Hak Akses Superadmin, Admin, User
-    // public static function canCreate(): bool
-    // {
-    //     // return Auth::user()?->hasRole(['superadmin', 'admin']);
-    // }
 }

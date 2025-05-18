@@ -12,7 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Filters\SelectFilter;
 use App\Filament\Resources\PreOrderResource;
-use App\Filament\Resources\InfoRequestResource\Widgets\PreOrderOverview;
+use App\Filament\Resources\InfoPreOrderResource\Widgets\PreOrderOverview;
 
 
 class ListPreOrders extends ListRecords
@@ -52,8 +52,8 @@ class ListPreOrders extends ListRecords
             // 3. Filter berdasarkan RENTANG TANGGAL CREATED_AT
             Filter::make('created_at')
                 ->form([
-                    DatePicker::make('from')->label('Dari Tanggal'),
-                    DatePicker::make('until')->label('Sampai Tanggal'),
+                    DatePicker::make('from')->label('From'),
+                    DatePicker::make('until')->label('Until'),
                 ])
                 ->query(function ($query, array $data) {
                     return $query
@@ -70,7 +70,7 @@ class ListPreOrders extends ListRecords
             // 5. Filter berdasarkan keyword pada CODE_PO
             Filter::make('code_po')
                 ->form([
-                    TextInput::make('value')->label('Cari Kode PO'),
+                    TextInput::make('value')->label('Search Code PO'),
                 ])
                 ->query(function ($query, array $data) {
                     return $query->when(
@@ -82,7 +82,7 @@ class ListPreOrders extends ListRecords
 
             // 6. Filter status TIDAK SAMA DENGAN 'rejected'
             Filter::make('not_rejected')
-                ->label('Tanpa Rejected')
+                ->label('Not Rejected')
                 ->toggle()
                 ->query(function ($query, array $data) {
                     if (! $data['isActive']) {

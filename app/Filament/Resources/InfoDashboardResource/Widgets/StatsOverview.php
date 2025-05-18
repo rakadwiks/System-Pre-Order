@@ -6,6 +6,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\User;
 use Filament\Support\Enums\IconPosition;
+
 class StatsOverview extends BaseWidget
 {
     // Count the number of users
