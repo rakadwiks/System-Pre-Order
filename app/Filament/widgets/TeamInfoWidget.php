@@ -11,7 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 class TeamInfoWidget extends BaseWidget
 {
     protected static ?string $heading = 'Team Info';
-    protected int | string | array $columnSpan = '1/2';
+    protected int | string | array $columnSpan = 1;
     protected static ?int $sort = 3;
 
     protected function getTitle(): string

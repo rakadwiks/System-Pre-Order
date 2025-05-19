@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('pre_orders', function (Blueprint $table) {
             $table->id();
-            $table->integer('code_po');
-            $table->integer('id_product');
-            $table->integer('id_users');
-            $table->integer('id_supplier');
+            $table->string('code_po');
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->integer('total');
-            $table->string('description');
-            $table->enum('status', ['submitted', 'approved', 'rejected', 'completed', 'cancelled'])->default('submitted');
+            $table->enum('status', ['request', 'approved', 'rejected', 'completed', 'cancelled'])->default('request');
             $table->timestamps();
         });
     }
