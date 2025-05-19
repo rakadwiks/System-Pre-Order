@@ -16,15 +16,18 @@ class UserSeeder extends Seeder
     {
         // Division
         $division = Division::create([
-            'name_division' => 'IT Department'
+            'name_division' => 'IT Department',
+            'slug' => 'it-departement',
         ]);
         // Position
         $position = Position::create([
-            'name_position' => 'IT Support & Software Develop'
+            'name_position' => 'IT Support & Software Develop',
+            'slug' => 'it-support-&-software-develop',
         ]);
         // Buat tim secara manual
         $team = Team::create([
             'name_team' => 'IT',
+            'slug' => 'IT',
             'division_id' => $division->id, // Gunakan id jika PK-nya default
             'position_id' => $position->id,
         ]);

@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -29,7 +30,7 @@ class User extends Authenticatable
     protected $casts = [
         'role' => 'array',
     ];
-    
+
     // Membuat Roles agar 
     /**
      * Cek apakah user memiliki salah satu dari role yang diberikan.
@@ -39,8 +40,8 @@ class User extends Authenticatable
      */
     public function hasRole($roles): bool
     {
-        
-        \Log::info('Checking roles for user: ' . json_encode($this->role));  // Log untuk melacak role
+
+        Log::info('Checking roles for user: ' . json_encode($this->role));  // Log untuk melacak role
         $roles = (array) $roles;  // Pastikan parameter roles adalah array
         return collect($this->role)->intersect($roles)->isNotEmpty();  // Cek apakah ada role yang cocok
     }
@@ -67,7 +68,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function team() {
+    public function Team()
+    {
         return $this->belongsTo(Team::class);
+    }
+    public function Ticket()
+    {
+        return $this->hasMany(Ticket::class);
     }
 }

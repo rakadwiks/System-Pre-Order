@@ -14,5 +14,4 @@ class Provinces extends Model
     {
         return $this->hasMany(Regency::class);
     }
-
 }

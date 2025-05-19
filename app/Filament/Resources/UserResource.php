@@ -8,15 +8,13 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\CheckboxList;
 use App\Filament\Resources\UserResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\UserResource\RelationManagers;
+
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
@@ -42,17 +40,21 @@ class UserResource extends Resource
                     ->preload() // preload untuk menghindari delay
                     ->required(),
                 Forms\Components\TextInput::make('password')
+                    ->label('Password')
                     ->password()
-                    ->required()
-                    ->maxLength(255),
-                CheckboxList::make('role')
+                    ->maxLength(255)
+                    ->required(fn(string $context) => $context === 'create')
+                    ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
+                    ->dehydrated(fn($state) => filled($state)),
+                Radio::make('role')
                     ->label('Roles')
                     ->options([
                         'user' => 'User',
                         'admin' => 'Admin',
                         'superadmin' => 'Superadmin',
                     ])
-                    ->columns(3) // mengatur kolom
+                    ->inline()
+                    ->inlineLabel(false)
                     ->default(['user'])  // Defaultnya adalah 'user' ketika registrasi
                     ->required(),
             ]);
@@ -116,25 +118,25 @@ class UserResource extends Resource
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['superadmin']);
     }
     public static function canView(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['superadmin']);
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['superadmin']);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['superadmin']);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['superadmin']);
     }
 }

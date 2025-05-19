@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -12,7 +13,7 @@ class Supplier extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class, );
+        return $this->belongsTo(Product::class,);
     }
     public function province()
     {
@@ -22,5 +23,13 @@ class Supplier extends Model
     public function regency()
     {
         return $this->belongsTo(Regency::class, 'regency_id');
+    }
+
+    // membuat default ketika input
+    protected static function booted()
+    {
+        static::creating(function ($supplier) {
+            $supplier->slug = Str::slug($supplier->name_supplier);
+        });
     }
 }

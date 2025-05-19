@@ -13,15 +13,14 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Placeholder;
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Filament\Resources\ProductResource\Pages\ViewProduct;
 use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationManager;
+use Filament\Infolists\Components\Section as ComponentsSection;
 
 class ProductResource extends Resource
 {
@@ -37,67 +36,60 @@ class ProductResource extends Resource
         return $form
             // membuat code barang otomatis 
             ->schema([
-                Forms\Components\TextInput::make('code_product')
-                ->default(function () {
-                    $randomNumber = random_int(1, 9999);
-                    return 'IT-' . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
-                })
-                ->readOnly()
-                ->disabled()
-                ->dehydrated(),
-                Forms\Components\TextInput::make('name_product')
-                    ->required()
-                    ->maxLength(255),
-                Select::make('supplier_id')
-                    ->label('Supplier')
-                    ->options(Supplier::all()->pluck('name_supplier', 'id'))
-                    ->reactive()
-                    ->visible(!$isView)
-                    ->searchable(),
-                
-                Forms\Components\TextInput::make('stock')
-                    ->label('Quantity')
-                    ->numeric()
-                    ->required()
-                    ->live()
-                    ->hidden($isEdit), // disembunyikan saat edit
-                Forms\Components\TextInput::make('price')
-                    ->label('Price')
-                    ->required()
-                    ->reactive()
-                    ->afterStateHydrated(function ($state, callable $set) {
-                        if ($state) {
-                            $formatted = number_format($state, 0, ',', '.');
-                            $set('price', $formatted);
-                        }
-                    })
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        // Hapus titik sebelum disimpan ke state
-                        $numeric = str_replace('.', '', $state);
-                        $set('price', intval($numeric));
-                    })
-                    ->extraAttributes([
-                        'x-data' => '{}',
-                        'x-init' => 'this.addEventListener("input", function(e) {
-                            let value = e.target.value.replace(/\./g, "");
-                            if (!isNaN(value)) {
-                                e.target.value = Number(value).toLocaleString("id-ID");
-                            }
-                        })',
-                    ]),                        
-                Forms\Components\TextInput::make('final_stock')
-                        ->label('Stock')
-                        ->numeric()
-                        ->default(fn (Get $get) => $get('stock') + $get('in_stock') - $get('out_stock'))
-                        ->readOnly()
-                        ->disabled()
-                        ->dehydrated(),
-        ]);
+                Section::make()
+                    ->columns(4)
+                    ->schema([
+                        Forms\Components\TextInput::make('code_product')
+                            ->default(function () {
+                                $randomNumber = random_int(1, 9999);
+                                return 'IT-' . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
+                            })
+                            ->readOnly()
+                            ->disabled()
+                            ->dehydrated(),
+                        Forms\Components\TextInput::make('name_product')
+                            ->required()
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2), // mengatur column
+                        Select::make('supplier_id')
+                            ->label('Supplier')
+                            ->options(Supplier::all()->pluck('name_supplier', 'id'))
+                            ->reactive()
+                            ->required()
+                            ->visible(!$isView)
+                            ->searchable()
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 1), // mengatur column
+                        Forms\Components\TextInput::make('stock')
+                            ->label('Quantity')
+                            ->required()
+                            ->numeric()
+                            ->live() // membuat generet otomatis ketika input quantity pada field quantity
+                            ->hidden($isEdit) // disembunyikan saat edit
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                $set('final_stock', self::countFinalStock($get));
+                            })
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 4),
+                        Forms\Components\TextInput::make('price')
+                            ->label('Price')
+                            ->required()
+                            ->numeric()
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 3),
+                        // Output final stock
+                        TextInput::make('final_stock')
+                            ->label('Stock')
+                            ->numeric()
+                            ->required()
+                            ->disabled(), // agar tidak bisa diisi manual
+
+                    ])
+
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code_product')
@@ -109,7 +101,7 @@ class ProductResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Price')
-                    ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
+                    ->money('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('stock')
                     ->label('Quantity')
@@ -127,7 +119,7 @@ class ProductResource extends Resource
                     ->label('Stock')
                     ->numeric()
                     ->sortable()
-                    ->color(fn (string $state): string => match (true) {
+                    ->color(fn(string $state): string => match (true) {
                         intval($state) < 0 => 'danger', // Warna merah jika nilai negatif
                         default => 'success', // Warna hijau jika nilai positif atau 0
                     }),
@@ -144,8 +136,8 @@ class ProductResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),                
-                Tables\Actions\ViewAction::make(),                
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -156,12 +148,12 @@ class ProductResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with('supplier'); // menampilkan view detail
+            ->with('supplier'); // menambahkan data relation pada supplier
     }
-    
+
     public static function getRelations(): array
     {
-        
+
         return [
             SupplierRelationManager::class,
         ];
@@ -171,9 +163,7 @@ class ProductResource extends Resource
     {
         return [
             'index' => Pages\ListProducts::route('/'),
-            'view' => ViewProduct::route('/{record}'), 
-            // 'create' => Pages\CreateProduct::route('/create'),
-            // 'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'view' => ViewProduct::route('/{record}'),
         ];
     }
 
@@ -200,5 +190,10 @@ class ProductResource extends Resource
     public static function canDelete(Model $record): bool
     {
         return Auth::user()?->hasRole(['superadmin', 'admin']);
+    }
+
+    protected static function countFinalStock(Get $get): int
+    {
+        return (int) $get('stock') + (int) $get('in_stock') - (int) $get('out_stock');
     }
 }

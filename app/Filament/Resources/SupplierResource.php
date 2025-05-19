@@ -10,17 +10,13 @@ use Filament\Forms\Form;
 use App\Models\Provinces;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
-use function Laravel\Prompts\search;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-use App\Filament\Resources\SupplierResource\RelationManagers;
 class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
@@ -52,17 +48,15 @@ class SupplierResource extends Resource
                     ->options(Provinces::all()->pluck('name', 'id'))
                     ->reactive()
                     ->searchable()
-                    ->afterStateUpdated(fn ($set) => $set('regency_id', null)),
-                
+                    ->afterStateUpdated(fn($set) => $set('regency_id', null)),
+
                 Select::make('regency_id')
                     ->label('Regency')
                     ->required()
-                    ->options(fn (callable $get) => 
-                        Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
+                    ->options(fn(callable $get) =>
+                    Regency::where('province_id', $get('province_id'))->pluck('name', 'id'))
                     ->reactive()
                     ->searchable(),
-                
-
                 Forms\Components\TextInput::make('country')
                     ->required()
                     ->maxLength(255),
@@ -116,9 +110,9 @@ class SupplierResource extends Resource
             ]);
     }
     public static function getEloquentQuery(): Builder
-{
-    return parent::getEloquentQuery()->with(['province']);
-}
+    {
+        return parent::getEloquentQuery()->with(['province']);
+    }
 
 
     public static function getRelations(): array
