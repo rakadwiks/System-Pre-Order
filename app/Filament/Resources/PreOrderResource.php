@@ -136,7 +136,7 @@ class PreOrderResource extends Resource
                     ->badge()
                     ->searchable()
                     ->colors([
-                        'warning' => 'Request',
+                        'warning' => 'Requested',
                         'success' => 'Approved',
                         'info' => 'Completed',
                         'danger' => 'Rejected',

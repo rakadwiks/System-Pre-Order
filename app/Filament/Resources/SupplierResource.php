@@ -31,10 +31,11 @@ class SupplierResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
+                    ->label('Phone Number')
                     ->tel()
                     ->required()
-                    ->numeric()
-                    ->maxLength(13),
+                    ->mask('9999-9999-9999')
+                    ->maxLength(15),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->nullable()
@@ -73,7 +74,6 @@ class SupplierResource extends Resource
                 Tables\Columns\TextColumn::make('name_supplier')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),

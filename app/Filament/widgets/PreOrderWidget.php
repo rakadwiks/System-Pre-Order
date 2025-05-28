@@ -13,11 +13,9 @@ class PreOrderWidget extends BaseWidget
     protected int | string | array $columnSpan = 3;
     protected static ?int $sort = 2;
 
-
     protected function getTableQuery(): Builder
     {
-        return PreOrder::query()
-            ->with(['product', 'user']); // eager load relasi
+        return PreOrder::query(); // eager load relasi
     }
 
     protected function getTableColumns(): array
@@ -34,22 +32,20 @@ class PreOrderWidget extends BaseWidget
                 ->label('User Name')
                 ->sortable()
                 ->searchable(),
-
-            TextColumn::make('product.supplier.name_supplier')
-                ->label('Supplier Name'),
-
-
+                
             TextColumn::make('total')->label('Total'),
 
-            TextColumn::make('status')
+            TextColumn::make('status.name')
+                ->label('Status Tiket')
                 ->badge()
-                ->color(fn(string $state): string => match ($state) {
-                    'request' => 'warning',
-                    'approved' => 'success',
-                    'rejected' => 'danger',
-                    'completed' => 'info',
-                    'cancelled' => 'danger',
-                }),
+                ->searchable()
+                ->colors([
+                    'warning' => 'Requested',
+                    'success' => 'Approved',
+                    'info' => 'Completed',
+                    'danger' => 'Rejected',
+                ]),
+
         ];
     }
 }

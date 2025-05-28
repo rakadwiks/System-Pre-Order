@@ -9,4 +9,10 @@ class Position extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    // memanggil menggunakan slug untuk edit, view
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

@@ -20,4 +20,10 @@ class Team extends Model
     {
         return $this->belongsTo(Position::class, 'position_id');
     }
+
+    // memanggil menggunakan slug untuk edit, view
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

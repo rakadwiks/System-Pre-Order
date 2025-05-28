@@ -18,7 +18,6 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->integer('total');
-            $table->enum('status', ['request', 'approved', 'rejected', 'completed', 'cancelled'])->default('request');
             $table->timestamps();
         });
     }
