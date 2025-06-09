@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Team;
 use App\Models\Position;
 use App\Models\Division;
+use App\Models\Roles;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -24,6 +25,8 @@ class UserSeeder extends Seeder
             'name_position' => 'IT Support & Software Develop',
             'slug' => 'it-support-&-software-develop',
         ]);
+
+
         // Buat tim secara manual
         $team = Team::create([
             'name_team' => 'IT',
@@ -38,7 +41,7 @@ class UserSeeder extends Seeder
             'email' => 'itteam@daehan.co.id',
             'team_id' => $team->id, // Hubungkan ke table teams
             'password' => Hash::make('daehan2025'), // Password aman
-            'role' => ['superadmin'] // Eloquent akan otomatis menyimpan sebagai JSON
+            'role_id' => 1, // Eloquent akan otomatis menyimpan sebagai JSON
         ]);
     }
 }

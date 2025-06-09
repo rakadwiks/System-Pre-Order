@@ -46,16 +46,16 @@ class UserResource extends Resource
                     ->required(fn(string $context) => $context === 'create')
                     ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
                     ->dehydrated(fn($state) => filled($state)),
-                Radio::make('role')
+                Radio::make('role_id')
                     ->label('Roles')
                     ->options([
-                        'user' => 'User',
-                        'admin' => 'Admin',
-                        'superadmin' => 'Superadmin',
+                        1 => 'Superadmin',
+                        2 => 'Admin',
+                        3 => 'User',
                     ])
                     ->inline()
                     ->inlineLabel(false)
-                    ->default(['user'])  // Defaultnya adalah 'user' ketika registrasi
+                    ->default(3)  // Defaultnya adalah 'user' ketika registrasi
                     ->required(),
             ]);
     }
@@ -68,12 +68,12 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                TextColumn::make('role')
+                TextColumn::make('role.name')
                     ->badge()
                     ->colors([
-                        'gray' => 'user',
-                        'warning' => 'admin',
-                        'danger' => 'superadmin',
+                        'gray' => 'User',
+                        'warning' => 'Admin',
+                        'danger' => 'SuperAdmin',
                     ]),
                 Tables\Columns\TextColumn::make('team.name_team') // Mengambil nama dari tabel teams
                     ->searchable(),
@@ -118,21 +118,21 @@ class UserResource extends Resource
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole(['superadmin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
     public static function canView(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->hasRole(['superadmin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 
     public static function canDelete(Model $record): bool

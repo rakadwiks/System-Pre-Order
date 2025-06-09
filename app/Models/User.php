@@ -23,12 +23,12 @@ class User extends Authenticatable
         'email',
         'team_id',
         'password',
-        'role',
+        'role_id',
     ];
 
     //mengubah string menjadi array untuk penggunakan checkboxlist
     protected $casts = [
-        'role' => 'array',
+        'role_id' => 'array',
     ];
 
     // Membuat Roles agar 
@@ -42,8 +42,13 @@ class User extends Authenticatable
     {
 
         Log::info('Checking roles for user: ' . json_encode($this->role));  // Log untuk melacak role
-        $roles = (array) $roles;  // Pastikan parameter roles adalah array
-        return collect($this->role)->intersect($roles)->isNotEmpty();  // Cek apakah ada role yang cocok
+        $userRoleName = $this->role?->name; // Mengambil dari model User.php
+
+        if (is_array($roles)) {
+            return in_array($userRoleName, $roles);
+        }
+
+        return $userRoleName === $roles;
     }
 
     /**
@@ -75,5 +80,10 @@ class User extends Authenticatable
     public function Ticket()
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Roles::class, 'role_id');
     }
 }

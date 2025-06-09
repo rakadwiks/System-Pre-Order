@@ -322,25 +322,25 @@ class PreOrderResource extends Resource
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
     }
     public static function canView(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->hasRole(['superadmin', 'admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
     }
 }

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->text('description');
             $table->string('photos')->nullable();
+            $table->integer('role'); // menambahkan fitur checkboxlist 
             $table->timestamps();
         });
     }
