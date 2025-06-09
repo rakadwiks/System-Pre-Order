@@ -28,7 +28,7 @@ class User extends Authenticatable
 
     //mengubah string menjadi array untuk penggunakan checkboxlist
     protected $casts = [
-        'role_id' => 'array',
+        'role_id' => 'integer',
     ];
 
     // Membuat Roles agar 
