@@ -13,12 +13,17 @@ class PreOrder extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function supplier()
+    {
+        return $this->belongsTo(User::class, 'supplier_id');
     }
 
     public function ticket()
@@ -38,6 +43,10 @@ class PreOrder extends Model
             if ($product) {
                 $outStock = intval($preOrder->total); // jumlah preorder
                 $product->out_stock += $outStock;
+
+                // Hitung ulang final_stock
+                $product->final_stock = $product->stock + $product->in_stock - $product->out_stock;
+
                 // Hitung ulang final_stock
                 $product->final_stock = $product->stock + $product->in_stock - $product->out_stock;
                 $product->save();

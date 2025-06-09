@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Filament\Widgets;
+
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\PreOrder;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Widgets\TableWidget as BaseWidget;
+
+class PreOrderWidget extends BaseWidget
+{
+    protected static ?string $heading = 'List Pre Order';
+    protected int | string | array $columnSpan = 3;
+    protected static ?int $sort = 2;
+
+
+    protected function getTableQuery(): Builder
+    {
+        return PreOrder::query()
+            ->with(['product', 'user']); // eager load relasi
+    }
+
+    protected function getTableColumns(): array
+    {
+        return [
+            TextColumn::make('code_po')->label('PO Code'),
+
+            TextColumn::make('product.name_product')
+                ->label('Product Name')
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('user.name')
+                ->label('User Name')
+                ->sortable()
+                ->searchable(),
+
+            TextColumn::make('product.supplier.name_supplier')
+                ->label('Supplier Name'),
+
+
+            TextColumn::make('total')->label('Total'),
+
+            TextColumn::make('status')
+                ->badge()
+                ->color(fn(string $state): string => match ($state) {
+                    'request' => 'warning',
+                    'approved' => 'success',
+                    'rejected' => 'danger',
+                    'completed' => 'info',
+                    'cancelled' => 'danger',
+                }),
+        ];
+    }
+}
