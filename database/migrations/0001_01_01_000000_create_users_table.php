@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->json('role')->nullable(); // menambahkan fitur checkboxlist 
+            // $table->json('role')->nullable(); // menambahkan fitur checkboxlist 
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

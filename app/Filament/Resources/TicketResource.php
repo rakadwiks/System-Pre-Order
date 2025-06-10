@@ -18,12 +18,13 @@ use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\TicketResource\Pages;
+use App\Models\User;
 
 class TicketResource extends Resource
 {
     protected static ?string $model = Ticket::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function form(Form $form): Form
     {
@@ -55,6 +56,8 @@ class TicketResource extends Resource
                     Hidden::make('status_order_id')
                         ->default(fn() => statusOrder::where('name', 'requested')
                             ->value('id')),
+                    Hidden::make('role_id')
+                        ->default(fn() => Auth::user()?->role_id)
                 ])->compact(),
 
                 Section::make('Upload Error')
@@ -148,7 +151,7 @@ class TicketResource extends Resource
                     ->size('xs')
                     ->icon('heroicon-o-check-circle')
                     ->color('info')
-                    ->hidden(fn() => Auth::user()?->hasRole('user')) // menyembunyikan role user
+                    ->hidden(fn() => Auth::user()?->hasRole('User')) // menyembunyikan role user
                     ->visible(function ($record) {
                         // Cek jika status_id adalah 'requested' (status awal)
                         return $record->status_ticket_id == StatusTicket::where('name', 'requested')->value('id');
@@ -172,7 +175,7 @@ class TicketResource extends Resource
                     ->color('info')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->hidden(fn() => Auth::user()?->hasRole('user')) // menyembunyikan role user
+                    ->hidden(fn() => Auth::user()?->hasRole('User')) // menyembunyikan role user
                     ->visible(function ($record) {
                         // Cek jika status_ticket_id adalah 'requested' (status awal)
                         return $record->status_ticket_id == StatusTicket::where('name', 'requested')->value('id');
@@ -187,7 +190,7 @@ class TicketResource extends Resource
                     ->modalHeading('Tickets')
                     ->modalSubheading('Are you sure you want to rejected this Tickets ?')  // Deskripsi modal konfirmasi
                     ->modalButton('Yes'),
-                Tables\Actions\EditAction::make()->hidden(fn() => Auth::user()?->hasRole('admin')), // menyembunyikan role user,
+                Tables\Actions\EditAction::make()->hidden(fn() => Auth::user()?->hasRole('Admin')), // menyembunyikan role user,
                 Tables\Actions\ViewAction::make(),
 
 
@@ -219,7 +222,7 @@ class TicketResource extends Resource
     {
         $user = Auth::user();
         // Cek apakah user memiliki salah satu role yang diizinkan
-        if (! $user?->hasRole(['superadmin', 'admin'])) {
+        if (! $user?->hasRole(['SuperAdmin', 'Admin'])) {
             return null;
         }
         $count = Ticket::whereHas('statusTicket', function ($query) {

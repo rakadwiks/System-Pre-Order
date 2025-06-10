@@ -3,28 +3,29 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
+use App\Models\Role;
 use Filament\Tables;
-use App\Models\Division;
+use App\Models\Roles;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
-use App\Filament\Resources\DivisionResource\Pages;
+use App\Filament\Resources\RoleResource\Pages;
 
-class DivisionResource extends Resource
+class RoleResource extends Resource
 {
-    protected static ?string $model = Division::class;
+    protected static ?string $model = Roles::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog';
-    protected static ?string $navigationGroup = 'Master'; // navigasi group
+    protected static ?string $navigationIcon = 'heroicon-o-key';
+    protected static ?string $navigationGroup = 'Other'; // navigasi group
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name_division')
-                    ->label('Name Divison')
+                Forms\Components\TextInput::make('name')
+                    ->label('Name Role')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -34,8 +35,8 @@ class DivisionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name_division')
-                    ->label('Name Divison')
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Name Role')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -69,12 +70,11 @@ class DivisionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDivisions::route('/'),
-            // 'create' => Pages\CreateDivision::route('/create'),
-            // 'edit' => Pages\EditDivision::route('/{record}/edit'),
+            'index' => Pages\ListRoles::route('/'),
+            // 'create' => Pages\CreateRole::route('/create'),
+            // 'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }
-
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {

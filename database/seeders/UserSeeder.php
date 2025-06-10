@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Team;
 use App\Models\Position;
 use App\Models\Division;
+use App\Models\Roles;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
