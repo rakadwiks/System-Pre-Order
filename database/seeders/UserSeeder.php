@@ -19,17 +19,37 @@ class UserSeeder extends Seeder
             'name_division' => 'IT Department',
             'slug' => 'it-departement',
         ]);
+
+        $tempDivision = Division::create([
+            'name_division' => 'Temporary Department',
+            'slug' => 'temporary-departement',
+        ]);
+
+
         // Position
         $position = Position::create([
             'name_position' => 'IT Support & Software Develop',
             'slug' => 'it-support-&-software-develop',
         ]);
+        
+        $managerPosition = Position::create([
+            'name_position' => 'Manager',
+            'slug' => 'manager',
+        ]);
+
         // Buat tim secara manual
         $team = Team::create([
             'name_team' => 'IT',
             'slug' => 'IT',
             'division_id' => $division->id, // Gunakan id jika PK-nya default
             'position_id' => $position->id,
+        ]);
+
+        $tempTeam = Team::create([
+            'name_team' => 'Temporary Team',
+            'slug' => 'temporary-team',
+            'division_id' => $tempDivision->id, // Gunakan id jika PK-nya default
+            'position_id' => $managerPosition->id,
         ]);
 
         // Buat user yang terhubung ke tim tersebut
@@ -40,5 +60,13 @@ class UserSeeder extends Seeder
             'password' => Hash::make('daehan2025'), // Password aman
             'role' => ['superadmin'] // Eloquent akan otomatis menyimpan sebagai JSON
         ]);
+
+        // User::create([
+        //     'name' => 'Vikri',
+        //     'email' => 'vikri@daehan.co.id',
+        //     'team_id' => $tempTeam->id, // Hubungkan ke table teams
+        //     'password' => Hash::make('daehan2025'), // Password aman
+        //     'role' => ['admin'] // Eloquent akan otomatis menyimpan sebagai JSON
+        // ]);
     }
 }
