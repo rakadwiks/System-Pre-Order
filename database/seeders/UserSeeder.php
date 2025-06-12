@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
             'name_position' => 'IT Support & Software Develop',
             'slug' => 'it-support-&-software-develop',
         ]);
-        
+
         $managerPosition = Position::create([
             'name_position' => 'Manager',
             'slug' => 'manager',
@@ -59,7 +59,7 @@ class UserSeeder extends Seeder
             'email' => 'itteam@daehan.co.id',
             'team_id' => $team->id, // Hubungkan ke table teams
             'password' => Hash::make('daehan2025'), // Password aman
-            'role' => ['superadmin'] // Eloquent akan otomatis menyimpan sebagai JSON
+            'role_id' => 1, // Eloquent akan otomatis menyimpan sebagai JSON
         ]);
 
         // User::create([

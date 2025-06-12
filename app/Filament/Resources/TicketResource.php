@@ -109,7 +109,8 @@ class TicketResource extends Resource
                         // Ambil value pertama dari associative array
                         if (is_array($photos) && count($photos) > 0) {
                             $firstPath = array_values($photos)[0];
-                            return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
+                            // return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
+                            return $firstPath; // hasil: http://localhost/storage/ticket-photos/xxx.png
                         }
 
                         return null;

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Register;
 use App\Filament\Widgets\PreOrderWidget;
 use App\Filament\Resources\InfoRequestResource\Widgets\PreOrderOverview;
 use Filament\Http\Middleware\Authenticate;
@@ -31,7 +32,7 @@ class DashboardPanelProvider extends PanelProvider
             ->id('dashboard')
             ->path('dashboard')
             ->login()
-            ->registration()
+            ->registration(Register::class)
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
