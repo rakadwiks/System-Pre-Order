@@ -87,10 +87,11 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Roles::class, 'role_id');
     }
+
     // membuat default ketika input
     protected static function booted()
     {
-
+        parent::boot();
         static::creating(function ($register) {
             $user = null;
 
@@ -105,9 +106,10 @@ class User extends Authenticatable
                 }
             }
 
-            // Set role dari user jika ada, kalau tidak set nilai default (misal 'user')
-            $register->role_id = $user && $user->role_id ? $user->role_id : 3;
-            // atau role default id 1
+            // Hanya set role_id jika tidak dari console (seeder)
+            if (!app()->runningInConsole() && !$register->role_id) {
+                $register->role_id = $user && $user->role_id ? $user->role_id : 3; // ketika Registrasi role_id menjadi User (3)
+            }
         });
     }
 }

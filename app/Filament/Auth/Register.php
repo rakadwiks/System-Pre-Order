@@ -2,12 +2,10 @@
 
 namespace App\Filament\Auth;
 
-use App\Models\Roles;
 use App\Models\Team;
-use Filament\Forms\Components\Radio;
+use Filament\Forms\Form;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Pages\Auth\Register as AuthRegister;
 
 class Register extends AuthRegister

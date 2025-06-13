@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\Pages\ViewProduct;
 use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationManager;
-use Filament\Infolists\Components\Section as ComponentsSection;
 
 class ProductResource extends Resource
 {
