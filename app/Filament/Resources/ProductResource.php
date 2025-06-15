@@ -24,9 +24,8 @@ use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationMana
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-cube';
-
+    protected static ?string $navigationGroup = 'Products Management'; // navigasi group
     public static function form(Form $form): Form
     {
         $isEdit = !is_null($form->getRecord());

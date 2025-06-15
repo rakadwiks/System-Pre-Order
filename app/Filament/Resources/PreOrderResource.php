@@ -28,7 +28,8 @@ use App\Filament\Resources\PreOrderResource\RelationManagers\TicketRelationManag
 class PreOrderResource extends Resource
 {
     protected static ?string $model = PreOrder::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart'; // menambahkan icon 
+    protected static ?string $navigationGroup = 'Products Management'; // navigasi group
     public static function form(Form $form): Form
     {
         return $form

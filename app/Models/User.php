@@ -92,23 +92,21 @@ class User extends Authenticatable
     protected static function booted()
     {
         parent::boot();
+
         static::creating(function ($register) {
-            $user = null;
+            $user = Auth::user();
 
-            if ($register->user_id) {
-                $user = User::find($register->user_id);
+            // Jangan isi user_id kalau modelnya adalah User
+            if (!$register instanceof User && !$register->user_id && $user) {
+                $register->user_id = $user->id;
             }
 
-            if (!$user) {
-                $user = Auth::user();
-                if ($user && !$register->user_id) {
-                    $register->user_id = $user->id;
-                }
-            }
-
-            // Hanya set role_id jika tidak dari console (seeder)
             if (!app()->runningInConsole() && !$register->role_id) {
-                $register->role_id = $user && $user->role_id ? $user->role_id : 3; // ketika Registrasi role_id menjadi User (3)
+                if ($user && $user->role_id == 1) {
+                    $register->role_id = 3;
+                } else {
+                    $register->role_id = $user && $user->role_id ? $user->role_id : 3;
+                }
             }
         });
     }

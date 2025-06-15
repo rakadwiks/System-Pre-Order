@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,9 +13,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesSeeder::class,
             UserSeeder::class,
-            // RegionSeeder::class,
+            RegionSeeder::class,
             StatusSeeder::class,
             StatusTicketSeeder::class,
+            DivisionSeeder::class,
+            PositionSeeder::class,
         ]);
     }
 }

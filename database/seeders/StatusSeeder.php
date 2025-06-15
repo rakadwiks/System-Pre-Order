@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Status;
 use App\Models\statusOrder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class StatusSeeder extends Seeder

@@ -18,7 +18,7 @@ class TeamResource extends Resource
     protected static ?string $model = Team::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Master'; // navigasi group
+    protected static ?string $navigationGroup = 'Organization'; // navigasi group
 
     public static function form(Form $form): Form
     {
