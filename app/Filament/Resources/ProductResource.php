@@ -19,6 +19,8 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\Pages\ViewProduct;
+use Filament\Infolists\Components\Section as ComponentsSection;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationManager;
 
 class ProductResource extends Resource
@@ -136,6 +138,13 @@ class ProductResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
+            ])
+            ->headerActions([
+                // ExportAction::make()
+                //     ->exporter(PreOrderExporter::class)
+                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
+
+                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

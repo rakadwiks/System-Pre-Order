@@ -16,6 +16,7 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 
 class SupplierResource extends Resource
 {
@@ -103,6 +104,13 @@ class SupplierResource extends Resource
 
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                // ExportAction::make()
+                //     ->exporter(PreOrderExporter::class)
+                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
+
+                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
