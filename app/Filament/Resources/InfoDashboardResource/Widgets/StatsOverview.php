@@ -2,16 +2,19 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\PreOrder;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
-use Filament\Support\Enums\IconPosition;
+use App\Models\User;
+use App\Models\PreOrder;
 use Illuminate\Support\Facades\DB;
-use App\Models\statusOrder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Support\Enums\IconPosition;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class StatsOverview extends BaseWidget
 {
+    protected static ?string $model = User::class;
     protected int | string | array $columnSpan = 'full';
     protected static ?int $sort = 1;
     protected ?string $heading = 'Stats Overview';
@@ -25,7 +28,6 @@ class StatsOverview extends BaseWidget
             'approved' => 2,
             'completed' => 3,
             'rejected' => 4,
-            // 'cancelled' => 5, 
         ];
 
         $data = [
@@ -34,7 +36,6 @@ class StatsOverview extends BaseWidget
             'approved_count' => PreOrder::where('status_id', $statusMap['approved'])->count(),
             'rejected_count' => PreOrder::where('status_id', $statusMap['rejected'])->count(),
             'completed_count' => PreOrder::where('status_id', $statusMap['completed'])->count(),
-            // 'cancelled_count' => PreOrder::where('status_id', $statusMap['cancelled'] ?? 0)->count(),
         ];
 
         foreach ($statusMap as $key => $id) {
@@ -80,22 +81,11 @@ class StatsOverview extends BaseWidget
                 ->color('warning')
                 ->chart($data['requested_chart']),
 
-            Stat::make('Total Approved', $data['approved_count'])
-                ->description('Approved in 7 days ')
-                ->descriptionIcon('heroicon-o-check-circle', IconPosition::Before)
-                ->color('info')
-                ->chart($data['approved_chart']),
-
             Stat::make('Total Rejected', $data['rejected_count'])
                 ->description('Rejected in 7 days')
                 ->descriptionIcon('heroicon-o-x-circle', IconPosition::Before)
                 ->color('danger')
                 ->chart($data['rejected_chart']),
-
-            Stat::make('Total Pre Orders', $data['po_count'])
-                ->description(' ')
-                ->descriptionIcon('heroicon-o-inbox', IconPosition::Before)
-                ->color('secondary'),
 
             Stat::make('Total Completed', $data['completed_count'])
                 ->description('Completed PO in 7 days ')
@@ -103,21 +93,40 @@ class StatsOverview extends BaseWidget
                 ->color('success')
                 ->chart($data['completed_chart']),
 
-            // Stat::make('Total Cancelled', $data['cancelled_count'])
-            //     ->description('Cancelled PO in 7 days')
-            //     ->descriptionIcon('heroicon-o-trash', IconPosition::Before)
-            //     ->color('danger')
-            //     ->chart($data['cancelled_chart']),
+            Stat::make('Total Orders', $data['po_count'])
+                ->description(' ')
+                ->descriptionIcon('heroicon-o-inbox', IconPosition::Before)
+                ->color('secondary'),
 
-            Stat::make('Total Unit Keluar', number_format($data['product_spent']))
-                ->description('Total produk yang keluar (unit)')
-                ->descriptionIcon('heroicon-o-arrow-trending-down', IconPosition::Before)
-                ->color('info'),
-
-            Stat::make('Total Pengeluaran', 'Rp ' . number_format($data['money_spent'], 2, ',', '.'))
+            Stat::make('total Expenditure', 'Rp ' . number_format($data['money_spent'], 2, ',', '.'))
                 ->description('Pengeluaran keuangan dari PO completed')
                 ->descriptionIcon('heroicon-o-banknotes', IconPosition::Before)
                 ->color('danger'),
         ];
+    }
+
+    // Middleware untuk Hak Akses Superadmin, Admin, User
+    public static function canViewAny(): bool
+    {
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+    }
+    public static function canView(): bool
+    {
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->hasRole(['superadmin', 'Admin']);
     }
 }
