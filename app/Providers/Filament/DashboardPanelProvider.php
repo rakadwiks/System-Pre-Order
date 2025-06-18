@@ -34,6 +34,7 @@ class DashboardPanelProvider extends PanelProvider
             ->login()
             ->registration(Register::class)
             ->databaseNotifications()
+            ->favicon(asset('images/logo.png'))
             ->colors([
                 'primary' => Color::Amber,
             ])
