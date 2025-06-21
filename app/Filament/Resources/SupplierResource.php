@@ -16,12 +16,14 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SupplierResource\Pages;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 
 class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
+    protected static ?string $navigationGroup = 'Products Management'; // navigasi group
 
     public static function form(Form $form): Form
     {
@@ -102,6 +104,13 @@ class SupplierResource extends Resource
 
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                // ExportAction::make()
+                //     ->exporter(PreOrderExporter::class)
+                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
+
+                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

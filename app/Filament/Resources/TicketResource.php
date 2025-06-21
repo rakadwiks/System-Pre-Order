@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use Doctrine\DBAL\Schema\Column;
 use Filament\Forms;
+use App\Models\User;
 use Filament\Tables;
 use App\Models\Ticket;
 use Filament\Forms\Form;
@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 use App\Models\statusOrder;
 use Illuminate\Support\Str;
 use App\Models\StatusTicket;
+use Doctrine\DBAL\Schema\Column;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
@@ -18,7 +19,7 @@ use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use App\Filament\Resources\TicketResource\Pages;
-use App\Models\User;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 
 class TicketResource extends Resource
 {
@@ -109,7 +110,8 @@ class TicketResource extends Resource
                         // Ambil value pertama dari associative array
                         if (is_array($photos) && count($photos) > 0) {
                             $firstPath = array_values($photos)[0];
-                            return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
+                            // return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
+                            return $firstPath; // hasil: http://localhost/storage/ticket-photos/xxx.png
                         }
 
                         return null;
@@ -194,6 +196,13 @@ class TicketResource extends Resource
                 Tables\Actions\ViewAction::make(),
 
 
+            ])
+            ->headerActions([
+                // ExportAction::make()
+                //     ->exporter(PreOrderExporter::class)
+                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
+
+                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

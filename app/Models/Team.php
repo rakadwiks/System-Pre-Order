@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -19,6 +20,20 @@ class Team extends Model
     public function position()
     {
         return $this->belongsTo(Position::class, 'position_id');
+    }
+
+    protected static function booted()
+    {
+
+        // membuat default ketika input
+        static::creating(function ($Team) {
+            $Team->slug = Str::slug($Team->name_team);
+        });
+
+        // mengubah slug ketika update
+        static::updating(function ($Team) {
+            $Team->slug = Str::slug($Team->name_team);
+        });
     }
 
     // memanggil menggunakan slug untuk edit, view

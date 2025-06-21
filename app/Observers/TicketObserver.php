@@ -5,7 +5,6 @@ namespace App\Observers;
 use App\Models\User;
 use App\Models\Roles;
 use App\Models\Ticket;
-use Illuminate\Support\Str;
 use App\Models\StatusTicket;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;

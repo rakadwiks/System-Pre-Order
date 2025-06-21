@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -85,5 +86,28 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Roles::class, 'role_id');
+    }
+
+    // membuat default ketika input
+    protected static function booted()
+    {
+        parent::boot();
+
+        static::creating(function ($register) {
+            $user = Auth::user();
+
+            // Jangan isi user_id kalau modelnya adalah User
+            if (!$register instanceof User && !$register->user_id && $user) {
+                $register->user_id = $user->id;
+            }
+
+            if (!app()->runningInConsole() && !$register->role_id) {
+                if ($user && $user->role_id == 1) {
+                    $register->role_id = 3;
+                } else {
+                    $register->role_id = $user && $user->role_id ? $user->role_id : 3;
+                }
+            }
+        });
     }
 }

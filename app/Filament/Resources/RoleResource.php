@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use Filament\Forms;
-use App\Models\Role;
 use Filament\Tables;
 use App\Models\Roles;
 use Filament\Forms\Form;
@@ -18,7 +17,7 @@ class RoleResource extends Resource
     protected static ?string $model = Roles::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
-    protected static ?string $navigationGroup = 'Other'; // navigasi group
+    protected static ?string $navigationGroup = 'Permission'; // navigasi group
 
     public static function form(Form $form): Form
     {
@@ -78,25 +77,25 @@ class RoleResource extends Resource
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
     public static function canView(Model $record): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin']);
     }
 }

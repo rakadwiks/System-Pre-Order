@@ -21,14 +21,19 @@ use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Exports\PreOrderExporter;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use App\Filament\Resources\PreOrderResource\Pages;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\PreOrderResource\RelationManagers\TicketRelationManager;
 
 class PreOrderResource extends Resource
 {
     protected static ?string $model = PreOrder::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart'; // menambahkan icon 
+    protected static ?string $navigationGroup = 'Products Management'; // navigasi group
     public static function form(Form $form): Form
     {
         return $form
@@ -119,12 +124,17 @@ class PreOrderResource extends Resource
                 Tables\Columns\TextColumn::make('code_po')
                     ->numeric()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('product.name_product')
-                    ->label('Product')
-                    ->numeric()
-                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('User Complaint')
+                    ->numeric()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('ticket.description')
+                    ->label('Description')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('product.name_product')
+                    ->label('Product')
                     ->numeric()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total')
@@ -146,6 +156,7 @@ class PreOrderResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -297,10 +308,18 @@ class PreOrderResource extends Resource
                     ->color('gray')
                     ->size('xs'),
             ])
+            ->headerActions([
+                // ExportAction::make()
+                //     ->exporter(PreOrderExporter::class)
+                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
+
+                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+
             ]);
     }
 
