@@ -14,7 +14,7 @@ class PreOrderWidget extends BaseWidget
 {
     protected static ?string $heading = 'List Pre Order';
     protected int | string | array $columnSpan = 3;
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 4;
 
     protected function getTableQuery(): Builder
     {

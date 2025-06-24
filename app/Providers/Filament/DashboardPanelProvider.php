@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Register;
+use App\Filament\Resources\ProductChartResource\Widgets\ProductChart;
 use App\Filament\Widgets\PreOrderWidget;
 use App\Filament\Resources\InfoRequestResource\Widgets\PreOrderOverview;
 use Filament\Http\Middleware\Authenticate;
@@ -45,9 +46,11 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+                ProductChart::class,
                 StatsOverview::class,
                 PreOrderWidget::class,
                 TeamInfoWidget::class,
+
             ])
             ->middleware([
                 EncryptCookies::class,

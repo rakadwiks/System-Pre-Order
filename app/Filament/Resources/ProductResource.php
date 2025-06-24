@@ -74,7 +74,7 @@ class ProductResource extends Resource
                                 $set('final_stock', self::countFinalStock($get));
 
                                 // Hitung total price juga
-                                $set('total_price', ($get('price') ?? 0) * ($get('stock') ?? 0));
+                                $set('total_price', (float) ($get('price') ?? 0) * (float) ($get('stock') ?? 0));
                             })
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
 
@@ -90,9 +90,10 @@ class ProductResource extends Resource
                             ->label('Price')
                             ->required()
                             ->numeric()
+                            ->hidden($isEdit) // disembunyikan saat edit
                             ->live() // membuat generet otomatis
                             ->afterStateUpdated(function (Get $get, Set $set) {
-                                $set('total_price', ($get('price') ?? 0) * ($get('stock') ?? 0));
+                                $set('total_price', (float) ($get('price') ?? 0) * (float) ($get('stock') ?? 0));
                             })
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
                         TextInput::make('total_price')

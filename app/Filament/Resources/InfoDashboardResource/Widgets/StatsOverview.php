@@ -91,10 +91,6 @@ class StatsOverview extends BaseWidget
                 ->color('danger')
                 ->icon('heroicon-o-x-circle')
                 ->chart($data['rejected_chart']),
-            Stat::make('Info ', 'Rp ' . number_format($data['money_spent'], 2, ',', '.'))
-                ->description('')
-                ->icon('heroicon-o-x-circle')
-                ->color('danger'),
         ];
     }
 }
