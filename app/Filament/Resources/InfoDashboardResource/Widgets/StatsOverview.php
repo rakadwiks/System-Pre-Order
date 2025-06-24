@@ -80,7 +80,8 @@ class StatsOverview extends BaseWidget
             Stat::make('Approved', PreOrder::whereHas('status', fn($q) => $q->where('name', 'approved'))->count())
                 ->description('It has been approved')
                 ->color('success')
-                ->icon('heroicon-o-check-circle'),
+                ->icon('heroicon-o-check-circle')
+                ->chart($data['approved_chart']),
             Stat::make('Completed', PreOrder::whereHas('status', fn($q) => $q->where('name', 'completed'))->count())
                 ->description('Order is completed')
                 ->color('info')

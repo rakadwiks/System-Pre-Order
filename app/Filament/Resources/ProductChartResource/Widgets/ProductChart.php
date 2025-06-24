@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 class ProductChart extends ChartWidget
 {
-    protected static ?string $heading = '187.2k';
+    protected static ?string $heading = 'Total Expenditure';
     protected static string $color = 'info';
     protected static ?string $icon = 'heroicon-o-chart-bar'; // <- Tambah ikon di sini
     protected static ?string $iconColor = 'info';
@@ -114,7 +114,7 @@ class ProductChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Pengeluaran',
+                    'label' => 'Expenditure',
                     'data' => $data,
                     'borderColor' => '#3b82f6',
                     'backgroundColor' => 'rgba(59, 130, 246, 0.2)',
