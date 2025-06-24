@@ -26,7 +26,19 @@ class UserSeeder extends Seeder
             'slug' => 'it-support-and-software-develop',
         ]);
 
-        // Buat tim secara manual
+        // Division Admin
+        $divisionAdmin = Division::create([
+            'name_division' => 'Purchasing',
+            'slug' => 'purchasing',
+        ]);
+
+        // Position Admin
+        $positionAdmin = Position::create([
+            'name_position' => 'Purchasing and Procurement',
+            'slug' => 'purchasing-and-procurement',
+        ]);
+
+        // SuperAdmin
         $team = Team::create([
             'name_team' => 'IT',
             'slug' => 'IT',
@@ -34,13 +46,30 @@ class UserSeeder extends Seeder
             'position_id' => $position->id,
         ]);
 
-        // Buat user yang terhubung ke tim tersebut
+        // SuperAdmin
+        $teamAdmin = Team::create([
+            'name_team' => 'Dklee',
+            'slug' => 'Dklee',
+            'division_id' => $divisionAdmin->id, // Gunakan id jika PK-nya default
+            'position_id' => $positionAdmin->id,
+        ]);
+
+        // Buat user yang terhubung ke tim 
         User::create([
             'name' => 'IT',
             'email' => 'itteam@daehan.co.id',
             'team_id' => $team->id, // Hubungkan ke table teams
             'password' => Hash::make('daehan2025'), // Password aman
-            'role_id' => 1, // Eloquent akan otomatis menyimpan sebagai JSON
+            'role_id' => 1, // Eloquent akan otomatis menyimpan sebagai JSON (SuperAdmin)
+        ]);
+
+        // Buat user yang terhubung ke tim
+        User::create([
+            'name' => 'erna',
+            'email' => 'erna@daehan.co.id',
+            'team_id' => $teamAdmin->id, // Hubungkan ke table teams
+            'password' => Hash::make('dhgadmin'), // Password aman
+            'role_id' => 2, // Eloquent akan otomatis menyimpan sebagai JSON (Admin)
         ]);
     }
 }
