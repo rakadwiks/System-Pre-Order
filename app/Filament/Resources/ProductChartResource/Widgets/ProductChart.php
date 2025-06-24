@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\ProductChartResource\Widgets;
 
-use Filament\Widgets\ChartWidget;
 use App\Models\Product;
 use Illuminate\Support\Carbon;
+use Filament\Widgets\ChartWidget;
 
 class ProductChart extends ChartWidget
 {

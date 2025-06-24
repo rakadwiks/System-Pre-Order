@@ -19,7 +19,6 @@ use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\Pages\ViewProduct;
-use Filament\Infolists\Components\Section as ComponentsSection;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\ProductResource\RelationManagers\SupplierRelationManager;
 

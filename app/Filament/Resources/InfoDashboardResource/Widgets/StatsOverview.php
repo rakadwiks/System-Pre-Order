@@ -2,15 +2,12 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\PreOrder;
-use App\Models\Product;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
 use Carbon\Carbon;
-use Filament\Support\Enums\IconPosition;
+use App\Models\Product;
+use App\Models\PreOrder;
 use Illuminate\Support\Facades\DB;
-use App\Models\statusOrder;
-use App\Models\Supplier;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
 class StatsOverview extends BaseWidget
 {
