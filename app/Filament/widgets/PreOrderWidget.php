@@ -31,7 +31,7 @@ class PreOrderWidget extends BaseWidget
                 ->sortable()
                 ->searchable(),
 
-            TextColumn::make('user.name')
+            TextColumn::make('ticket.user.name')
                 ->label('User Name')
                 ->sortable()
                 ->searchable(),
@@ -39,7 +39,7 @@ class PreOrderWidget extends BaseWidget
             TextColumn::make('total')->label('Total'),
 
             TextColumn::make('status.name')
-                ->label('Status Tiket')
+                ->label('Status Order')
                 ->badge()
                 ->searchable()
                 ->colors([
@@ -51,13 +51,4 @@ class PreOrderWidget extends BaseWidget
 
         ];
     }
-
-    // protected function getHeaderActions(): array
-    // {
-    //     return [
-    //         ExportAction::make()
-    //             ->exporter(PreOrderExporter::class)
-    //             ->formats([ExportFormat::Xlsx])
-    //     ];
-    // }
 }

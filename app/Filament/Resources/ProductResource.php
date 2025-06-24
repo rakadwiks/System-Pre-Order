@@ -47,11 +47,13 @@ class ProductResource extends Resource
                             ->readOnly()
                             ->disabled()
                             ->dehydrated(),
+
                         Forms\Components\TextInput::make('name_product')
                             ->required()
                             ->required()
                             ->maxLength(255)
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2), // mengatur column
+
                         Select::make('supplier_id')
                             ->label('Supplier')
                             ->options(Supplier::all()->pluck('name_supplier', 'id'))
@@ -60,6 +62,7 @@ class ProductResource extends Resource
                             ->visible(!$isView)
                             ->searchable()
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 1), // mengatur column
+
                         Forms\Components\TextInput::make('stock')
                             ->label('Quantity')
                             ->required()
@@ -67,21 +70,41 @@ class ProductResource extends Resource
                             ->live() // membuat generet otomatis ketika input quantity pada field quantity
                             ->hidden($isEdit) // disembunyikan saat edit
                             ->afterStateUpdated(function (Get $get, Set $set) {
+                                // Update final stock
                                 $set('final_stock', self::countFinalStock($get));
+
+                                // Hitung total price juga
+                                $set('total_price', ($get('price') ?? 0) * ($get('stock') ?? 0));
                             })
-                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 4),
-                        Forms\Components\TextInput::make('price')
-                            ->label('Price')
-                            ->required()
-                            ->numeric()
-                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 3),
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
+
                         // Output final stock
                         TextInput::make('final_stock')
                             ->label('Stock')
                             ->numeric()
                             ->required()
-                            ->disabled(), // agar tidak bisa diisi manual
+                            ->disabled() // agar tidak bisa diisi manual
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
 
+                        Forms\Components\TextInput::make('price')
+                            ->label('Price')
+                            ->required()
+                            ->numeric()
+                            ->live() // membuat generet otomatis
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                $set('total_price', ($get('price') ?? 0) * ($get('stock') ?? 0));
+                            })
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
+                        TextInput::make('total_price')
+                            ->label('Total Price')
+                            ->disabled() // tidak bisa diketik manual
+                            ->numeric()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                $price = (float) $get('price');
+                                $stock = (int) $get('stock');
+                                $set('total_price', $price * $stock);
+                            })
+                            ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
                     ])
 
             ]);
@@ -100,12 +123,16 @@ class ProductResource extends Resource
                     ->label('Suppliers')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->label('Price')
+                    ->label('Price /Item')
                     ->money('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('stock')
                     ->label('Quantity')
                     ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->label('Total Price')
+                    ->money('IDR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('in_stock')
                     ->label('IN')
@@ -140,11 +167,11 @@ class ProductResource extends Resource
                 Tables\Actions\ViewAction::make(),
             ])
             ->headerActions([
-                // ExportAction::make()
-                //     ->exporter(PreOrderExporter::class)
-                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
-
-                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
+                FilamentExportHeaderAction::make('Export')
+                    ->modalHeading('Export')
+                    ->modalDescription('Select the file format and data you want to export.')
+                    ->color('gray')
+                    ->size('xs')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

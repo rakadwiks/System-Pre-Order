@@ -2,19 +2,18 @@
 
 namespace App\Filament\Widgets;
 
-use Carbon\Carbon;
-use App\Models\User;
 use App\Models\PreOrder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Support\Enums\IconPosition;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use App\Models\Product;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+use Carbon\Carbon;
+use Filament\Support\Enums\IconPosition;
+use Illuminate\Support\Facades\DB;
+use App\Models\statusOrder;
+use App\Models\Supplier;
 
 class StatsOverview extends BaseWidget
 {
-    protected static ?string $model = User::class;
     protected int | string | array $columnSpan = 'full';
     protected static ?int $sort = 1;
     protected ?string $heading = 'Stats Overview';
@@ -62,10 +61,7 @@ class StatsOverview extends BaseWidget
 
         $data['product_spent'] = PreOrder::where('status_id', $statusMap['completed'])->sum('total');
 
-        $data['money_spent'] = PreOrder::where('status_id', $statusMap['completed'])
-            ->join('products', 'pre_orders.product_id', '=', 'products.id')
-            ->selectRaw('SUM(pre_orders.total * products.price) as total_spent')
-            ->value('total_spent') ?? 0;
+        $data['money_spent'] = Product::sum('total_price') ?? 0;
 
         return $data;
     }
@@ -75,58 +71,30 @@ class StatsOverview extends BaseWidget
         $data = $this->getData();
 
         return [
-            Stat::make('Total Request', $data['request_count'])
-                ->description('Request in 7 days ')
-                ->descriptionIcon('heroicon-o-clock', IconPosition::Before)
+
+            Stat::make('Requested', PreOrder::whereHas('status', fn($q) => $q->where('name', 'requested'))->count())
+                ->description('Waiting for confirmation ')
                 ->color('warning')
+                ->icon('heroicon-o-clock')
                 ->chart($data['requested_chart']),
-
-            Stat::make('Total Rejected', $data['rejected_count'])
-                ->description('Rejected in 7 days')
-                ->descriptionIcon('heroicon-o-x-circle', IconPosition::Before)
-                ->color('danger')
-                ->chart($data['rejected_chart']),
-
-            Stat::make('Total Completed', $data['completed_count'])
-                ->description('Completed PO in 7 days ')
-                ->descriptionIcon('heroicon-o-check-badge', IconPosition::Before)
+            Stat::make('Approved', PreOrder::whereHas('status', fn($q) => $q->where('name', 'approved'))->count())
+                ->description('It has been approved')
                 ->color('success')
+                ->icon('heroicon-o-check-circle'),
+            Stat::make('Completed', PreOrder::whereHas('status', fn($q) => $q->where('name', 'completed'))->count())
+                ->description('Order is completed')
+                ->color('info')
+                ->icon('heroicon-o-check-badge')
                 ->chart($data['completed_chart']),
-
-            Stat::make('Total Orders', $data['po_count'])
-                ->description(' ')
-                ->descriptionIcon('heroicon-o-inbox', IconPosition::Before)
-                ->color('secondary'),
-
-            Stat::make('total Expenditure', 'Rp ' . number_format($data['money_spent'], 2, ',', '.'))
-                ->description('Pengeluaran keuangan dari PO completed')
-                ->descriptionIcon('heroicon-o-banknotes', IconPosition::Before)
+            Stat::make('Rejected', PreOrder::whereHas('status', fn($q) => $q->where('name', 'rejected'))->count())
+                ->description('Not approved')
+                ->color('danger')
+                ->icon('heroicon-o-x-circle')
+                ->chart($data['rejected_chart']),
+            Stat::make('Info ', 'Rp ' . number_format($data['money_spent'], 2, ',', '.'))
+                ->description('')
+                ->icon('heroicon-o-x-circle')
                 ->color('danger'),
         ];
-    }
-
-    // Middleware untuk Hak Akses Superadmin, Admin, User
-    public static function canViewAny(): bool
-    {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
-    }
-    public static function canView(): bool
-    {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
-    }
-
-    public static function canCreate(): bool
-    {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
-    }
-
-    public static function canEdit(Model $record): bool
-    {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return Auth::user()?->hasRole(['superadmin', 'Admin']);
     }
 }

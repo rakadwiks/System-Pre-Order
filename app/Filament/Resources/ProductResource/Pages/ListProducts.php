@@ -46,13 +46,19 @@ class ListProducts extends ListRecords
                                         if ($product) {
                                             $name = $product->name_product;
                                             Notification::make()
-                                                ->title('Produk Ditambahkan')
-                                                ->body("{$name} berhasil ditambahkan.")
+                                                ->title('Success')
+                                                ->body("Product {$name} added successfully.")
                                                 ->success()
                                                 ->send();
                                         }
                                     }
                                 }),
+                            TextInput::make('price')
+                                ->label('Harga Satuan')
+                                ->disabled()
+                                ->numeric()
+                                ->live()
+                                ->visible(fn($get) => filled($get('product_id'))),
                         ]),
                 ])
                 ->action(function (array $data) {
@@ -60,16 +66,21 @@ class ListProducts extends ListRecords
 
                     if ($product) {
                         $inStock = intval($data['in_stock']);
+                        $price = intval($product->price);
 
                         // Tambahkan nilai ke in_stock
                         $product->in_stock += $inStock;
 
-                        // Hitung ulang final_stock berdasarkan rumus
+                        // Hitung ulang total_price = price × in_stock
+                        $product->total_price = $price * $product->in_stock;
+
+                        // Hitung ulang final_stock
                         $product->final_stock = $product->stock + $product->in_stock - intval($product->out_stock);
 
                         $product->save();
                     }
                 })
+
 
                 ->successNotificationTitle('Stock successfully added!')
                 ->color('success'),
