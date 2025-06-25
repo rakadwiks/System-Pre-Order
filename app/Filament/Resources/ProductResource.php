@@ -99,11 +99,6 @@ class ProductResource extends Resource
                             ->label('Total Price')
                             ->disabled() // tidak bisa diketik manual
                             ->numeric()
-                            ->afterStateUpdated(function (Get $get, Set $set) {
-                                $price = (float) $get('price');
-                                $stock = (int) $get('stock');
-                                $set('total_price', $price * $stock);
-                            })
                             ->columnSpan(fn(string $context) => $context === 'view' ? 1 : 2),
                     ])
 

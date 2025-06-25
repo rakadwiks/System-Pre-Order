@@ -71,11 +71,11 @@ class ListProducts extends ListRecords
                         // Tambahkan nilai ke in_stock
                         $product->in_stock += $inStock;
 
-                        // Hitung ulang total_price = price × in_stock
-                        $product->total_price = $price * $product->in_stock;
-
-                        // Hitung ulang final_stock
+                        // Hitung ulang final_stock terlebih dahulu
                         $product->final_stock = $product->stock + $product->in_stock - intval($product->out_stock);
+
+                        // Baru kemudian hitung total_price berdasarkan final_stock
+                        $product->total_price = $price * $product->final_stock;
 
                         $product->save();
                     }
