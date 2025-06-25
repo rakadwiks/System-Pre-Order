@@ -17,8 +17,9 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('name_product')->unique();
             $table->foreignId('supplier_id')->constrained('suppliers')->cascadeOnDelete();
-            $table->decimal('price');
+            $table->bigInteger('price');
             $table->integer('stock');
+            $table->bigInteger('total_price');
             $table->integer('in_stock')->default('0');
             $table->integer('out_stock')->default('0');
             $table->integer('final_stock');

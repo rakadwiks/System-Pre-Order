@@ -106,11 +106,11 @@ class SupplierResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->headerActions([
-                // ExportAction::make()
-                //     ->exporter(PreOrderExporter::class)
-                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
-
-                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
+                FilamentExportHeaderAction::make('Export')
+                    ->modalHeading('Export')
+                    ->modalDescription('Select the file format and data you want to export.')
+                    ->color('gray')
+                    ->size('xs')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
