@@ -13,7 +13,7 @@ class StatsOverview extends BaseWidget
 {
     protected int | string | array $columnSpan = 'full';
     protected static ?int $sort = 1;
-    protected ?string $heading = 'Stats';
+    protected ?string $heading = 'Stats Overview';
 
     protected function getData(): array
     {
