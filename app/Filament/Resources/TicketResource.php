@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
@@ -11,15 +12,16 @@ use Filament\Tables\Table;
 use App\Models\statusOrder;
 use Illuminate\Support\Str;
 use App\Models\StatusTicket;
-use Doctrine\DBAL\Schema\Column;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\ExportAction;
+use App\Filament\Exports\PreOrderExporter;
 use App\Filament\Resources\TicketResource\Pages;
-use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
+use Filament\Actions\Exports\Enums\ExportFormat;
 
 class TicketResource extends Resource
 {
@@ -203,6 +205,8 @@ class TicketResource extends Resource
                 //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
 
                 FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
+                    ->disableAdditionalColumns()
+                    ->disableFilterColumns()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -76,4 +76,11 @@ class Ticket extends Model
             }
         );
     }
+
+
+    // fitur export untuk menampilkan foto
+    public function getPhotoExportAttribute()
+    {
+        return "<img src='{$this->photos}' width='100'>";
+    }
 }
