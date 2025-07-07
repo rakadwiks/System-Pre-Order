@@ -16,6 +16,9 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Actions\ExportAction;
@@ -71,6 +74,7 @@ class TicketResource extends Resource
                             ->disk('public')
                             ->directory('ticket-photos')
                             ->multiple()
+                            ->required()
                             ->preserveFilenames()
                             ->reorderable()
                             ->downloadable()
@@ -88,7 +92,7 @@ class TicketResource extends Resource
                                     ->mapWithKeys(fn($file) => [Str::uuid()->toString() => $file])
                                     ->toArray();
                             })
-                            ->helperText('Upload photo PNG/JPG maksimal 2MB.'),
+                            ->helperText('Upload photo PNG/JPG maksimal 2MB.')
                     ])
                     ->compact()
             ]);
@@ -200,13 +204,12 @@ class TicketResource extends Resource
 
             ])
             ->headerActions([
-                // ExportAction::make()
-                //     ->exporter(PreOrderExporter::class)
-                //     ->formats([ExportFormat::Xlsx, ExportFormat::Csv,]),
-
-                FilamentExportHeaderAction::make('Export to pdf/xlsx/csv')
-                    ->disableAdditionalColumns()
-                    ->disableFilterColumns()
+                FilamentExportHeaderAction::make('Export')
+                    ->visible(fn() => Auth::user()?->hasRole(['SuperAdmin', 'Admin']))
+                    ->modalHeading('Export')
+                    ->modalDescription('Select the file format and data you want to export.')
+                    ->color('gray')
+                    ->size('xs')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

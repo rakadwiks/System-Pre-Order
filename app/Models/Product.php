@@ -33,6 +33,11 @@ class Product extends Model
         static::creating(function ($product) {
             $product->slug = Str::slug($product->name_product);
         });
+
+        // Menghitung total price dari stock * item
+        static::creating(function ($product) {
+            $product->total_price = $product->stock * $product->price;
+        });
     }
 
     // memanggil menggunakan slug untuk edit, view

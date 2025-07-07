@@ -12,7 +12,7 @@ class TeamInfoWidget extends BaseWidget
 {
     protected static ?string $heading = 'Team Info';
     protected int | string | array $columnSpan = 1;
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 5;
 
     protected function getTitle(): string
     {
@@ -27,7 +27,9 @@ class TeamInfoWidget extends BaseWidget
     public function getTableColumns(): array
     {
         return [
-            TextColumn::make('name_team')->label('Team Name'),
+            TextColumn::make('name_team')->label('Team Name')
+                ->sortable()
+                ->searchable(),
         ];
     }
 }

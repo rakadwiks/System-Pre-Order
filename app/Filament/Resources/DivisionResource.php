@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use App\Filament\Resources\DivisionResource\Pages;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 
 class DivisionResource extends Resource
 {
@@ -51,6 +52,13 @@ class DivisionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->headerActions([
+                FilamentExportHeaderAction::make('Export')
+                    ->modalHeading('Export')
+                    ->modalDescription('Select the file format and data you want to export.')
+                    ->color('gray')
+                    ->size('xs')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
