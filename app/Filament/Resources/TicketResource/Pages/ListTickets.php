@@ -23,7 +23,7 @@ class ListTickets extends ListRecords
     protected function getTableQuery(): Builder
     {
         // Ambil semua data jika admin
-        if (Auth::user()?->hasRole(['SuperAdmin', 'Admin'])) {
+        if (Auth::user()?->hasRole(['SuperAdmin', 'Admin','SuperUser'])) {
             return Ticket::query();
         }
 
