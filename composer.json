@@ -12,7 +12,9 @@
         "filament/filament": "^3.3",
         "filament/spatie-laravel-media-library-plugin": "^3.2",
         "laravel/framework": "^11.31",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "spatie/laravel-activitylog": "^4.10",
+        "z3d0x/filament-logger": "^0.8.0"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "*",
