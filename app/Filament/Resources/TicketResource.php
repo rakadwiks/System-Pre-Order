@@ -92,7 +92,7 @@ class TicketResource extends Resource
                                     ->mapWithKeys(fn($file) => [Str::uuid()->toString() => $file])
                                     ->toArray();
                             })
-                            ->helperText('Upload photo PNG/JPG maksimal 2MB.')
+                            ->helperText('Upload photo PNG/JPG max 2MB.')
                     ])
                     ->compact()
             ]);
@@ -238,7 +238,7 @@ class TicketResource extends Resource
     {
         $user = Auth::user();
         // Cek apakah user memiliki salah satu role yang diizinkan
-        if (! $user?->hasRole(['SuperAdmin', 'Admin'])) {
+        if (! $user?->hasRole(['SuperAdmin', 'Admin', 'SuperUser'])) {
             return null;
         }
         $count = Ticket::whereHas('statusTicket', function ($query) {

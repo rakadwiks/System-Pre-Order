@@ -199,7 +199,7 @@ class ProductResource extends Resource
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin', 'SuperUser']);
     }
     public static function canView(Model $record): bool
     {
