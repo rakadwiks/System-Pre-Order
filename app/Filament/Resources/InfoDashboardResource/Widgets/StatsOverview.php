@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\PreOrder;
+use App\Models\Ticket;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -13,7 +14,7 @@ class StatsOverview extends BaseWidget
 {
     protected int | string | array $columnSpan = 'full';
     protected static ?int $sort = 1;
-    protected ?string $heading = 'Stats Overview';
+    // protected ?string $heading = 'Stats Overview';
 
     protected function getData(): array
     {
@@ -22,24 +23,22 @@ class StatsOverview extends BaseWidget
         $statusMap = [
             'requested' => 1,
             'approved' => 2,
-            'completed' => 3,
-            'rejected' => 4,
+            'rejected' => 3,
         ];
 
         $data = [
-            'po_count' => PreOrder::count(),
-            'request_count' => PreOrder::where('status_id', $statusMap['requested'])->count(),
-            'approved_count' => PreOrder::where('status_id', $statusMap['approved'])->count(),
-            'rejected_count' => PreOrder::where('status_id', $statusMap['rejected'])->count(),
-            'completed_count' => PreOrder::where('status_id', $statusMap['completed'])->count(),
+            'po_count' => Ticket::count(),
+            'request_count' => Ticket::where('status_ticket_id', $statusMap['requested'])->count(),
+            'approved_count' => Ticket::where('status_ticket_id', $statusMap['approved'])->count(),
+            'rejected_count' => Ticket::where('status_ticket_id', $statusMap['rejected'])->count(),
         ];
 
         foreach ($statusMap as $key => $id) {
-            $dailyData = PreOrder::select(
+            $dailyData = Ticket::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as count')
             )
-                ->where('status_id', $id)
+                ->where('status_ticket_id', $id)
                 ->where('created_at', '>=', $startDate)
                 ->groupBy('date')
                 ->orderBy('date')
@@ -56,7 +55,7 @@ class StatsOverview extends BaseWidget
             $data["{$key}_chart"] = $counts;
         }
 
-        $data['product_spent'] = PreOrder::where('status_id', $statusMap['completed'])->sum('total');
+        // $data['product_spent'] = PreOrder::where('status_id', $statusMap['completed'])->sum('total');
 
         $data['money_spent'] = Product::sum('total_price') ?? 0;
 
@@ -69,22 +68,17 @@ class StatsOverview extends BaseWidget
 
         return [
 
-            Stat::make('Requested', PreOrder::whereHas('status', fn($q) => $q->where('name', 'requested'))->count())
+            Stat::make('Requested', Ticket::whereHas('statusTicket', fn($q) => $q->where('name', 'requested'))->count())
                 ->description('Waiting for confirmation ')
                 ->color('warning')
                 ->icon('heroicon-o-clock')
                 ->chart($data['requested_chart']),
-            Stat::make('Approved', PreOrder::whereHas('status', fn($q) => $q->where('name', 'approved'))->count())
+            Stat::make('Approved', Ticket::whereHas('statusTicket', fn($q) => $q->where('name', 'approved'))->count())
                 ->description('It has been approved')
                 ->color('success')
                 ->icon('heroicon-o-check-circle')
                 ->chart($data['approved_chart']),
-            Stat::make('Completed', PreOrder::whereHas('status', fn($q) => $q->where('name', 'completed'))->count())
-                ->description('Order is completed')
-                ->color('info')
-                ->icon('heroicon-o-check-badge')
-                ->chart($data['completed_chart']),
-            Stat::make('Rejected', PreOrder::whereHas('status', fn($q) => $q->where('name', 'rejected'))->count())
+            Stat::make('Rejected', Ticket::whereHas('statusTicket', fn($q) => $q->where('name', 'rejected'))->count())
                 ->description('Not approved')
                 ->color('danger')
                 ->icon('heroicon-o-x-circle')

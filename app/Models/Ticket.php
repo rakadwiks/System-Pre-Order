@@ -7,8 +7,26 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class Ticket extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'description',
+                'status_ticket_name',
+                'status_order_name',
+            ]) // Field yang akan dilog
+            ->useLogName('user')         // Nama log
+            ->logOnlyDirty()             // Hanya jika field berubah
+            ->setDescriptionForEvent(fn(string $eventName) => "User model has been {$eventName}");
+    }
+
     use Notifiable;
     protected $guarded = [];
     protected $casts = [
@@ -31,6 +49,17 @@ class Ticket extends Model
     public function preOrder()
     {
         return $this->hasMany(PreOrder::class);
+    }
+
+    // untuk accessor log activity
+    public function getStatusTicketNameAttribute()
+    {
+        return $this->statusTicket?->name;
+    }
+
+    public function getStatusOrderNameAttribute()
+    {
+        return $this->statusOrder?->name;
     }
 
 
