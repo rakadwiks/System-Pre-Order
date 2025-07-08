@@ -3,28 +3,20 @@
 namespace App\Filament\Exports;
 
 use App\Models\PreOrder;
+use App\Models\Ticket;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 
 class PreOrderExporter extends Exporter
 {
-    protected static ?string $model = PreOrder::class;
+    protected static ?string $model = Ticket::class;
 
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('code_po'),
-            ExportColumn::make('slug'),
-            ExportColumn::make('product_id'),
-            ExportColumn::make('user_id'),
-            ExportColumn::make('total'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
-            ExportColumn::make('ticket_id'),
-            ExportColumn::make('status_id'),
+            ExportColumn::make('code_ticket'),
+            ExportColumn::make('photos'),
         ];
     }
 
