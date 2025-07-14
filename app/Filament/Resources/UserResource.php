@@ -50,9 +50,10 @@ class UserResource extends Resource
                 Radio::make('role_id')
                     ->label('Roles')
                     ->options([
-                        1 => 'Superadmin',
+                        1 => 'SuperAdmin',
                         2 => 'Admin',
                         3 => 'User',
+                        4 => 'SuperUser',
                     ])
                     ->inline()
                     ->inlineLabel(false)

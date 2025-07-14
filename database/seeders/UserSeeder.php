@@ -57,7 +57,7 @@ class UserSeeder extends Seeder
         // Buat user yang terhubung ke tim 
         User::create([
             'name' => 'IT',
-            'email' => 'itteam@daehan.co.id',
+            'email' => 'support.system@daehan.co.id',
             'team_id' => $team->id, // Hubungkan ke table teams
             'password' => Hash::make('daehan2025'), // Password aman
             'role_id' => 1, // Eloquent akan otomatis menyimpan sebagai JSON (SuperAdmin)

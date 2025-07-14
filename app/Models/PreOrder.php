@@ -6,11 +6,27 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class PreOrder extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['total', 'status_name']) // Field yang akan dilog
+            ->useLogName('user')         // Nama log
+            ->logOnlyDirty()             // Hanya jika field berubah
+            ->setDescriptionForEvent(fn(string $eventName) => "User model has been {$eventName}");
+    }
+
     use HasFactory, Notifiable;
     protected $guarded = [];
+    protected $casts = [
+        'installed_date' => 'date', // atau 'datetime' jika pakai jam
+    ];
 
     public function user()
     {
@@ -34,6 +50,24 @@ class PreOrder extends Model
     public function status()
     {
         return $this->belongsTo(statusOrder::class);
+    }
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+    public function rejected()
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+    public function completed()
+    {
+        return $this->belongsTo(User::class, 'completed_by');
+    }
+
+    // untuk accessor log activity
+    public function getStatusNameAttribute()
+    {
+        return $this->status?->name;
     }
 
     protected static function booted()

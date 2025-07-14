@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Mail\PoApprovedMail;
+use App\Mail\PoCompletedMail;
+use App\Mail\PoRejectedMail;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Ticket;
@@ -15,16 +18,14 @@ use App\Models\StatusTicket;
 use Filament\Resources\Resource;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\SelectFilter;
-use App\Filament\Exports\PreOrderExporter;
-use Filament\Actions\Exports\Enums\ExportFormat;
 use App\Filament\Resources\PreOrderResource\Pages;
 use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\PreOrderResource\RelationManagers\TicketRelationManager;
@@ -100,8 +101,8 @@ class PreOrderResource extends Resource
 
                                         if ($state > $finalStock) {
                                             Notification::make()
-                                                ->title('Stok Tidak Cukup')
-                                                ->body("Stok {$name} saat ini hanya {$finalStock} unit.")
+                                                ->title('Insufficient stock')
+                                                ->body("Current {$name} stock only {$finalStock} unit.")
                                                 ->danger()
                                                 ->persistent()
                                                 ->send();
@@ -125,7 +126,7 @@ class PreOrderResource extends Resource
                     ->numeric()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('user.name')
+                Tables\Columns\TextColumn::make('ticket.user.name')
                     ->label('User Complaint')
                     ->numeric()
                     ->searchable(),
@@ -188,7 +189,7 @@ class PreOrderResource extends Resource
                     ->searchable()
                     ->placeholder('Select status..')
                     ->query(function ($query, array $data) {
-                        if (! empty($data['values'])) {
+                        if (!empty($data['values'])) {
                             $query->whereIn('status_id', $data['values']);
                         }
                     }),
@@ -205,13 +206,41 @@ class PreOrderResource extends Resource
                         // Cek jika status_id adalah 'requested' (status awal)
                         return $record->status_id == statusOrder::where('name', 'requested')->value('id');
                     })
-                    ->action(function ($record) {
-                        // 1. Ambil ID status 'approved' dari status_order
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check-circle')
+                    ->modalHeading('Pre Orders')
+                    ->modalSubheading('Are you sure you want to approved this Orders ?')  // Deskripsi modal konfirmasi
+                    ->modalButton('Yes')
+                    ->form(fn(PreOrder $record) => [
+                        Forms\Components\TextInput::make('code_po')
+                            ->label('PO Code')
+                            ->default($record->code_po)
+                            ->hidden()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('User Email')
+                            ->email()
+                            ->hidden()
+                            ->default($record->ticket?->user?->email) // Ambil dari relasi 
+                            ->disabled(), // opsional: agar tidak bisa diedit
+                    ])
+                    ->action(function (array $data, PreOrder $record) {
+                        // ambil email langsung dari relasi user
+                        $email = $record->ticket?->user?->email;
+                        if (!$email) {
+                            throw new \Exception('User email not found.');
+                        }
+                        Mail::to($email)->send(
+                            new PoApprovedMail($record)
+                        );
+                        //  1. Ambil ID status 'approved' dari status_order
                         $approvedStatusId = StatusOrder::where('name', 'approved')->value('id');
-
+                        $record->update(['status_id' => $approvedStatusId]);
                         // 2. Update status_id pada record (orders)
                         $record->update([
                             'status_id' => $approvedStatusId,
+                            'approved_by' => Auth::id(),
+                            'installed_date' => now(),
                         ]);
 
                         // 3. Jika relasi ticket tersedia, update juga status_order_id di tabel ticket
@@ -220,12 +249,7 @@ class PreOrderResource extends Resource
                                 'status_order_id' => $approvedStatusId, // Asumsikan pakai status yang sama
                             ]);
                         }
-                    })
-                    ->requiresConfirmation()
-                    ->modalIcon('heroicon-o-check-circle')
-                    ->modalHeading('Pre Orders')
-                    ->modalSubheading('Are you sure you want to approved this Orders ?')  // Deskripsi modal konfirmasi
-                    ->modalButton('Yes'),
+                    }),
 
                 Tables\Actions\Action::make('Rejected')
                     ->hiddenLabel()
@@ -240,27 +264,54 @@ class PreOrderResource extends Resource
                         // Cek jika status_id adalah 'requested' (status awal)
                         return $record->status_id == statusOrder::where('name', 'requested')->value('id');
                     })
-                    ->action(function ($record) {
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-x-circle')
+                    ->modalHeading('Pre Orders')
+                    ->modalSubheading('Are you sure you want to rejected this Orders ?')  // Deskripsi modal konfirmasi
+                    ->modalButton('Yes')
+                    ->form(fn(PreOrder $record) => [
+                        Forms\Components\TextInput::make('code_po')
+                            ->label('PO Code')
+                            ->default($record->code_po)
+                            ->disabled(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('User Email')
+                            ->email()
+                            ->hidden()
+                            ->default($record->ticket?->user?->email) // Ambil dari relasi user
+                            ->disabled(), // opsional: agar tidak bisa diedit
+                        Forms\Components\Textarea::make('reason')
+                            ->label('Rejection Reason')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('Enter reason for rejection...')
+                    ])
+                    ->action(function (array $data, PreOrder $record) {
+                        // ambil email langsung dari relasi user
+                        $email = $record->ticket?->user?->email;
+                        if (!$email) {
+                            throw new \Exception('User email not found.');
+                        }
+                        Mail::to($email)->send(
+                            new PoRejectedMail($data['reason'], $record)
+                        );
                         // 1. Ambil ID status 'approved' dari status_order
-                        $approvedStatusId = StatusOrder::where('name', 'rejected')->value('id');
+                        $rejectedStatusId = StatusOrder::where('name', 'rejected')->value('id');
 
                         // 2. Update status_id pada record (orders)
                         $record->update([
-                            'status_id' => $approvedStatusId,
+                            'status_id' => $rejectedStatusId,
+                            'rejected_by' => Auth::id(),
                         ]);
 
                         // 3. Jika relasi ticket tersedia, update juga status_order_id di tabel ticket
                         if ($record->ticket) {
                             $record->ticket->update([
-                                'status_order_id' => $approvedStatusId, // Asumsikan pakai status yang sama
+                                'status_order_id' => $rejectedStatusId, // Asumsikan pakai status yang sama
                             ]);
                         }
-                    })
-                    ->requiresConfirmation()
-                    ->modalIcon('heroicon-o-x-circle')
-                    ->modalHeading('Pre Orders')
-                    ->modalSubheading('Are you sure you want to rejected this Orders ?')  // Deskripsi modal konfirmasi
-                    ->modalButton('Yes'),
+
+                    }),
 
                 Tables\Actions\Action::make('Completed')
                     ->hiddenLabel()
@@ -276,28 +327,50 @@ class PreOrderResource extends Resource
                             statusOrder::where('name', 'approved')->value('id'),
                         ]);
                     })
-                    ->action(function ($record) {
-                        // 1. Ambil ID status 'approved' dari status_order
-                        $approvedStatusId = StatusOrder::where('name', 'completed')->value('id');
-
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-check')
+                    ->modalHeading('Pre Orders')
+                    ->modalSubheading('Are you sure you want to completed this Orders ?')  // Deskripsi modal konfirmasi
+                    ->modalButton('Yes')
+                    ->form(fn(PreOrder $record) => [
+                        Forms\Components\TextInput::make('code_po')
+                            ->label('PO Code')
+                            ->default($record->code_po)
+                            ->hidden()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('User Email')
+                            ->email()
+                            ->hidden()
+                            ->default($record->ticket?->user?->email)// Ambil dari relasi user
+                            ->disabled(), // opsional: agar tidak bisa diedit
+                        // ->required() tidak perlu kalau disabled
+                    ])
+                    ->action(function (PreOrder $record) {
+                        // ambil email langsung dari relasi user
+                        $email = $record->ticket?->user?->email;
+                        if (!$email) {
+                            throw new \Exception('User email not found.');
+                        }
+                        Mail::to($email)->send(
+                            new PoCompletedMail($record)
+                        );
+                        //  1. Ambil ID status 'approved' dari status_order
+                        $completedStatusId = StatusOrder::where('name', 'completed')->value('id');
+                        $record->update(['status_id' => $completedStatusId]);
                         // 2. Update status_id pada record (orders)
                         $record->update([
-                            'status_id' => $approvedStatusId,
+                            'status_id' => $completedStatusId,
+                            'completed_by' => Auth::id(),
                         ]);
 
                         // 3. Jika relasi ticket tersedia, update juga status_order_id di tabel ticket
                         if ($record->ticket) {
                             $record->ticket->update([
-                                'status_order_id' => $approvedStatusId, // Asumsikan pakai status yang sama
+                                'status_order_id' => $completedStatusId, // Asumsikan pakai status yang sama
                             ]);
                         }
-                    })
-                    ->requiresConfirmation()
-                    ->modalIcon('heroicon-o-check')
-                    ->modalHeading('Pre Orders')
-                    ->modalSubheading('Are you sure you want to completed this Orders ?')  // Deskripsi modal konfirmasi
-                    ->modalButton('Yes'),
-
+                    }),
 
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
@@ -341,7 +414,7 @@ class PreOrderResource extends Resource
     // Middleware untuk Hak Akses Superadmin, Admin, User
     public static function canViewAny(): bool
     {
-        return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
+        return Auth::user()?->hasRole(['SuperAdmin', 'Admin', 'SuperUser']);
     }
     public static function canView(Model $record): bool
     {
@@ -363,3 +436,4 @@ class PreOrderResource extends Resource
         return Auth::user()?->hasRole(['SuperAdmin', 'Admin']);
     }
 }
+

@@ -5,9 +5,22 @@ namespace App\Models;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Division extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name_division']) // Field yang akan dilog
+            ->useLogName('user')         // Nama log
+            ->logOnlyDirty()             // Hanya jika field berubah
+            ->setDescriptionForEvent(fn(string $eventName) => "User model has been {$eventName}");
+    }
+
     use HasFactory;
     protected $guarded = [];
 

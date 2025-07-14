@@ -21,7 +21,7 @@ class TicketObserver
         if (!$creator) {
             return;
         }
-        $roleIds = Roles::whereIn('name', ['SuperAdmin', 'Admin'])->pluck('id')->toArray();
+        $roleIds = Roles::whereIn('name', ['SuperAdmin', 'Admin', 'SuperUser'])->pluck('id')->toArray();
 
         $recipients = User::whereIn('role_id', $roleIds)
             ->where('id', '!=', $creator->id) // tanpa creator
