@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
+use App\Mail\TicketApprovedMail;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
@@ -12,8 +12,10 @@ use Filament\Tables\Table;
 use App\Models\statusOrder;
 use Illuminate\Support\Str;
 use App\Models\StatusTicket;
+use App\Mail\TicketRejectedMail;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
@@ -25,6 +27,7 @@ use Filament\Tables\Actions\ExportAction;
 use App\Filament\Exports\PreOrderExporter;
 use App\Filament\Resources\TicketResource\Pages;
 use Filament\Actions\Exports\Enums\ExportFormat;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 
 class TicketResource extends Resource
 {
@@ -87,7 +90,8 @@ class TicketResource extends Resource
                                 return is_array($state) ? array_values($state) : [];
                             })
                             ->dehydrateStateUsing(function (?array $state) {
-                                if (! $state) return null;
+                                if (!$state)
+                                    return null;
                                 return collect($state)
                                     ->mapWithKeys(fn($file) => [Str::uuid()->toString() => $file])
                                     ->toArray();
@@ -116,8 +120,8 @@ class TicketResource extends Resource
                         // Ambil value pertama dari associative array
                         if (is_array($photos) && count($photos) > 0) {
                             $firstPath = array_values($photos)[0];
-                            // return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
-                            return $firstPath; // hasil: http://localhost/storage/ticket-photos/xxx.png
+                            return asset('storage/' . $firstPath); // hasil: http://localhost/storage/ticket-photos/xxx.png
+                            // return $firstPath; // hasil: http://localhost/storage/ticket-photos/xxx.png
                         }
 
                         return null;
@@ -164,16 +168,44 @@ class TicketResource extends Resource
                         // Cek jika status_id adalah 'requested' (status awal)
                         return $record->status_ticket_id == StatusTicket::where('name', 'requested')->value('id');
                     })
-                    ->action(function ($record) {
-                        // Update status ke 'approved'
-                        $approvedStatusId = StatusTicket::where('name', 'approved')->value('id');
-                        $record->update(['status_ticket_id' => $approvedStatusId]);
-                    })
                     ->requiresConfirmation()
                     ->modalIcon('heroicon-o-check-circle')
                     ->modalHeading('Tickets')
                     ->modalSubheading('Are you sure you want to approved this Tickets ?')  // Deskripsi modal konfirmasi
-                    ->modalButton('Yes'),
+                    ->modalButton('Yes')
+                    ->form(fn(Ticket $record) => [
+                        Forms\Components\TextInput::make('code_ticket')
+                            ->label('Ticket Code')
+                            ->default($record->code_ticket)
+                            ->hidden()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('User Email')
+                            ->email()
+                            ->hidden()
+                            ->default($record->user?->email) // Ambil dari relasi user
+                            ->disabled(), // opsional: agar tidak bisa diedit
+                        // ->required() tidak perlu kalau disabled
+                    ])
+                    ->action(function (array $data, Ticket $record) {
+                        // ambil email langsung dari relasi user
+                        $email = $record->user?->email;
+                        if (!$email) {
+                            throw new \Exception('User email not found.');
+                        }
+                        Mail::to($email)->send(
+                            new TicketApprovedMail($record)
+                        );
+                        // Update status ke 'approved'
+                        $approvedStatusId = StatusTicket::where('name', 'approved')->value('id');
+                        $record->update(['status_ticket_id' => $approvedStatusId]);
+
+                        // Update status ticket dan approved_by
+                        $record->update([
+                            'status_ticket_id' => $approvedStatusId,
+                            'approved_by' => Auth::id(),
+                        ]);
+                    }),
 
                 Tables\Actions\Action::make('Rejected')
                     ->hiddenLabel()
@@ -197,7 +229,45 @@ class TicketResource extends Resource
                     ->modalIcon('heroicon-o-x-circle')
                     ->modalHeading('Tickets')
                     ->modalSubheading('Are you sure you want to rejected this Tickets ?')  // Deskripsi modal konfirmasi
-                    ->modalButton('Yes'),
+                    ->modalButton('Yes')
+                    ->form(fn(Ticket $record) => [
+                        Forms\Components\TextInput::make('code_ticket')
+                            ->label('Ticket Code')
+                            ->default($record->code_ticket)
+                            ->hidden()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('email')
+                            ->label('User Email')
+                            ->email()
+                            ->hidden()
+                            ->default($record->user?->email) // Ambil dari relasi user
+                            ->disabled(), // opsional: agar tidak bisa diedit
+                        // ->required() tidak perlu kalau disabled
+                        Forms\Components\Textarea::make('reason')
+                            ->label('Rejection Reason')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('Enter reason for rejection...')
+                    ])
+                    ->action(function (array $data, Ticket $record) {
+                        // ambil email langsung dari relasi user
+                        $email = $record->user?->email;
+                        if (!$email) {
+                            throw new \Exception('User email not found.');
+                        }
+                        Mail::to($email)->send(
+                            new TicketRejectedMail($data['reason'], $record)
+                        );
+                        // Update status ke 'rejected'
+                        $rejectedStatusId = StatusTicket::where('name', 'rejected')->value('id');
+                        $record->update(['status_ticket_id' => $rejectedStatusId]);
+
+                        // Update status ticket dan approved_by
+                        $record->update([
+                            'status_ticket_id' => $rejectedStatusId,
+                            'rejected_by' => Auth::id(),
+                        ]);
+                    }),
                 Tables\Actions\EditAction::make()->hidden(fn() => Auth::user()?->hasRole('Admin')), // menyembunyikan role user,
                 Tables\Actions\ViewAction::make(),
 
@@ -238,7 +308,7 @@ class TicketResource extends Resource
     {
         $user = Auth::user();
         // Cek apakah user memiliki salah satu role yang diizinkan
-        if (! $user?->hasRole(['SuperAdmin', 'Admin', 'SuperUser'])) {
+        if (!$user?->hasRole(['SuperAdmin', 'Admin', 'SuperUser'])) {
             return null;
         }
         $count = Ticket::whereHas('statusTicket', function ($query) {

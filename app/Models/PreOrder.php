@@ -24,6 +24,9 @@ class PreOrder extends Model
 
     use HasFactory, Notifiable;
     protected $guarded = [];
+    protected $casts = [
+        'installed_date' => 'date', // atau 'datetime' jika pakai jam
+    ];
 
     public function user()
     {
@@ -47,6 +50,18 @@ class PreOrder extends Model
     public function status()
     {
         return $this->belongsTo(statusOrder::class);
+    }
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+    public function rejected()
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+    public function completed()
+    {
+        return $this->belongsTo(User::class, 'completed_by');
     }
 
     // untuk accessor log activity
