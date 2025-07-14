@@ -31,7 +31,7 @@ class Ticket extends Model
     protected $guarded = [];
     protected $casts = [
         'photos' => 'array',
-        'role_id'  => 'array'
+        'role_id' => 'array'
     ];
 
     public function user()
@@ -50,6 +50,15 @@ class Ticket extends Model
     {
         return $this->hasMany(PreOrder::class);
     }
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+    public function rejected()
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
 
     // untuk accessor log activity
     public function getStatusTicketNameAttribute()

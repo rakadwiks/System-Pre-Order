@@ -46,11 +46,13 @@ class PreOrderObserver
         if ($preOrder->wasChanged('status_id')) {
             $newStatusId = $preOrder->status_id;
 
-            if (in_array($newStatusId, [
-                $approvedStatusId,
-                $rejectedStatusId,
-                $completedStatusId,
-            ])) {
+            if (
+                in_array($newStatusId, [
+                    $approvedStatusId,
+                    $rejectedStatusId,
+                    $completedStatusId,
+                ])
+            ) {
                 $updater = Auth::user();
 
                 if (!$updater) {
